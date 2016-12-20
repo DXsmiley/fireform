@@ -1,5 +1,8 @@
-"""@package fireform
-Fireform is a entity-component based 2D game framework for Python.
+"""
+
+A component-entity game framework for python.
+
+:copyright: (c) 2016-2017 DXsmiley
 
 """
 
@@ -21,3 +24,4 @@ import fireform.geom
 import fireform.engine
 
 from fireform.entity import entity
+# IDEA: Import world here?

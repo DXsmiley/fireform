@@ -17,20 +17,27 @@ class SharedComponentException(Exception):
 # 	return lines[1:]
 
 class entity:
-	"""Basic entity.
+	"""A game entity.
 
 	This class should not be inherited from (because that's not how things work).
 
-	An entitie's attibutes and behaviours are defined by the 'blobs' that they are made from.
+	An entities' attibutes and behaviours are defined by the 'blobs' that they are made from.
 	"""
 
 	def __init__(self, *contents, ordering = 0, tags = set()):
 		"""
-		contents - data and behaviours that should be attached to this entity
-		ordering - sets the entity's "priority" in the world ordering list
-			a smaller number means it receives updates and things first
-		tags - a list of 'tags' to be associated with the object, which
-			can be used to identify it if you need to. this will probably be used more later.
+
+		:Parameters:
+			`contents` : list
+				Datum and Behaviours that should be attached to this entity.
+			`ordering` : int
+				The entity's "priority" in the world ordering list.
+				A smaller number means it receives messages earlier.
+				Defaults to 0.
+			`tags` : iterable of strings
+				String 'tags' to be associated with the entity.
+				Tags can be used to later identify entities.
+				Defaults to having no tags.
 		"""
 		self.contents = {}
 		self.datum = {}
@@ -64,7 +71,15 @@ class entity:
 
 		Data and behaviour objects can only be assigned to one entity.
 		An entity cannot have more than one of any type of named data of behaviour.
-		Note that is may have multiple instances of anonymous datum or behaviours (future feature)."""
+		Note that is may have multiple instances of anonymous datum or behaviours (future feature).
+
+		Do not use this method once the entity has been added to the world.
+
+		:Parameters:
+			`c`: `fireform.data.base` or `fireform.behaviour.base`
+				The component to add
+
+		"""
 		# Make sure the component is only used once... might move this code into the component.
 		if c in self.contents:
 			raise DuplicateComponentException()
@@ -126,4 +141,7 @@ class entity:
 			s += '    tags: ' + ', '.join(self.tags) + '\n'
 		return s
 
-entity.entity = entity
+# Compatibility shim, need to prevent sphinx from recursing into
+# a stack overflow
+if 'sphinx' not in __import__('sys').modules:
+	entity.entity = entity

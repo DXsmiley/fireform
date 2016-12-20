@@ -7,12 +7,11 @@ import fireform.efilter
 import fireform.util.timer
 
 class world:
-	""" World used to control game events and steps.
+	""" World used to control game events and ticks.
 		Holds a list of entities.
 	"""
 
 	def __init__(self):
-		"""Creates a new world!"""
 		self.entities = []
 		self.systems = []
 		self.systems_by_name = {}
@@ -23,7 +22,7 @@ class world:
 		self.filter_root = fireform.efilter.Filter('')
 
 	def refresh_entities(self):
-		"""Remove all dead entities from the list, and sort the living ones by ordering.
+		"""Remove all dead entities from the entity list, and sort the living ones by ordering.
 
 		Any entities added or destroyed will invalidate the list. You can call this to
 		clean it up (but it is somewhat expensive)."""
@@ -37,7 +36,13 @@ class world:
 		self.entities.sort(key = lambda x : x.ordering)
 
 	def add_entity(self, entity):
-		"""Add a single entity to the world."""
+		"""Add a single entity to the world.
+
+		:Parameters:
+			`entity`: `fireform.entity.entity`
+				The entity to add to the world.
+
+		"""
 		assert(isinstance(entity, fireform.entity.entity))
 		self.entities.append(entity)
 		for t in self.message_types:
@@ -48,7 +53,11 @@ class world:
 	def add_entities(self, entities):
 		"""Add multiple entities to the world.
 
-		'entities' should be a list of entity objects."""
+		:Parameters:
+			`entities`: iterable
+				An iterable that produces `entity` objects.
+
+		"""
 		for i in entities:
 			self.add_entity(i)
 
@@ -111,11 +120,25 @@ class world:
 				self.handle_message_result(behaviour.handle_message(self, entity, message))
 
 	def post_message(self, message):
-		"""Sends a message to all systems and entities in the world."""
+		"""Sends a message to all systems and entities in the world that are listening for it.
+
+		:Parameters:
+			`message`: `fireform.message.base`
+				The message to send.
+
+
+		"""
 		self.handle_message(message)
 
 	def post_message_private(self, message, entities):
-		"""Sends a message to a few entities and anything that is observing those entities."""
+		"""Sends a message to a few entities and anything that is observing those entities.
+		Also sends the message to the systems.
+
+		:Parameters:
+			`message`: `fireform.message.base`
+				The message to send.
+
+		"""
 		if isinstance(entities, fireform.entity.entity):
 			entities = [entities]
 		self.handle_message_private(message, entities)
