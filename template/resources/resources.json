@@ -1,0 +1,15 @@
+{
+	"_comments": "This is the resource sheet for chaos. It doesn't have anything yet.",
+	"sheets":
+	{
+		
+	},
+	"images":
+	{
+		"face":
+		{
+			"x_offset": 32,
+			"y_offset": 32
+		}
+	}
+}
