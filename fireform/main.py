@@ -28,8 +28,13 @@ def run(*args, **kwargs):
 	fireform.engine.current.run(*args, **kwargs)
 
 def stop():
-	"""Stops the main game loop.
-	..warning: Not Implemented"""
+	"""
+	Stops the main game loop.
+
+	.. warning::
+		Not Implemented
+
+	"""
 	raise NotImplementedError()
 
 def swap_world(new_world):
