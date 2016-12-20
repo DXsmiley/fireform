@@ -1,3 +1,7 @@
+# Ignore the example game folder until I remove the images that
+# Possibly have copyright issues
+example
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
