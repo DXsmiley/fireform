@@ -5,6 +5,9 @@ from os import path
 
 import fireform
 
+with open('requirements.txt') as f:
+	requirements = f.read().splitlines()
+
 LONG_DESC = """
 Fireform is an entity-driven game framework.
 It's currently in early alpha and has minimal documentation.
@@ -31,11 +34,8 @@ setup(
 
 	keywords = 'game',
 
+	install_requires = requirements,
 	include_package_data = True,
-
 	packages = find_packages()
 
-	# py_modules = [
-	# 	'ff_animation_view'
-	# ]
 )
