@@ -43,7 +43,7 @@ The world won't actually do anything by itself, however. Systems are used to def
 	world.add_system(fireform.system.motion())
 	world.add_system(fireform.system.camera())
 	world.add_system(fireform.system.image())
-	world.add_system(fireform.system.debug())
+	world.add_system(fireform.system.debug(allow_edit = True))
 
 These four 'standard' systems serve different purposes.
 
@@ -53,7 +53,7 @@ The *camera* system allows the viewer to move around the world. Otherwise the vi
 
 The *image* system is responsible for rendering graphics.
 
-The *debug* system gives us a number of tools to examine and manipulate entities when we run the game. If you decide to release a game, this would be removed.
+The *debug* system gives us a number of tools to examine and manipulate entities when we run the game.
 
 Finally, we have to start the game. This line will block, so make sure it is at the end of your code.
 
