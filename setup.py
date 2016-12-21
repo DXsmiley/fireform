@@ -31,11 +31,11 @@ setup(
 
 	keywords = 'game',
 
-	packages = [
-		'fireform'
-	],
+	include_package_data = True,
 
-	py_modules = [
-		'ff_animation_view'
-	]
+	packages = find_packages()
+
+	# py_modules = [
+	# 	'ff_animation_view'
+	# ]
 )
