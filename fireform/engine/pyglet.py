@@ -687,7 +687,7 @@ class text:
 			options.get('text'),
 			font_name = options.get('font_name', 'Arial'),
 			font_size = options.get('font_size', 10),
-			color = options.get('text_colour', (0, 0, 0, 255)),
+			color = options.get('color', (0, 0, 0, 255)),
 			x = options.get('x', 8),
 			y = options.get('y', 8),
 			width = options.get('width', 800),
