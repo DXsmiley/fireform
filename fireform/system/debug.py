@@ -169,8 +169,11 @@ class debug(base):
 	def m_mouse_click(self, world, message):
 		if self.allow_edit:
 			if self.targeted and self.display_things:
-				self.selected = not self.selected
+				self.selected = True
 				self.scaling = message.button == fireform.input.mouse.RIGHT
+
+	def m_mouse_release(self, world, message):
+		self.selected = False
 
 	def m_window_resized(self, world, message):
 		self.text_label.y = message.height - 20
