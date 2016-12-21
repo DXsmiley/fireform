@@ -1,7 +1,5 @@
-fireform
-========
-
-.. automodule:: fireform
+API Reference
+=============
 
 .. toctree::
 	:maxdepth: 2

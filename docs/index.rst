@@ -11,7 +11,7 @@ Welcome to Fireform's documentation!
 
 	install
 	tutorial
-	fireform
+	api
 
 
 Indices and tables
