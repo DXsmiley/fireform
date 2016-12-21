@@ -39,7 +39,7 @@ class world:
 		"""Add a single entity to the world.
 
 		:Parameters:
-			`entity`: `fireform.entity.entity`
+			`entity`: :class:`fireform.entity.entity`
 				The entity to add to the world.
 
 		"""
