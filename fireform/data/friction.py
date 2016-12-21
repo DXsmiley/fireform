@@ -2,7 +2,7 @@ from fireform.data.base import base
 from fireform.geom import vector
 
 class friction(vector, base):
-	"""Multiplies the velocity of an entity every tick."""
+	"""Multiplies the velocity of an entity every tick, causing it to accelerate or decelerate."""
 
 	name = 'friction'
 	attribute_name = 'friction'

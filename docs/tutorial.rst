@@ -78,6 +78,10 @@ Add the following code to the script. Make sure it comes before ``fireform.world
 
 The ``fireform.entity`` function accepts an arbitrary number of arguments. Each argument is a single aspect of the entity. `fireform.data.box` represents the bounding box of the entity.
 
+.. note::
+
+	You may see some code that uses ``fireform.entity.entity`` instead of just ``fireform.entity``. Either one works.
+
 If you run the code now you should see a green square in the middle of the window. This is the entity we have just created. If you hover your mouse over it you should get a description of the entity on the left hand side of the screen. You can use the left mouse button to drag the box around the screen, and the right button to resize it.
 
 Now lets add some motion to the object. We can add a velocity component to make the entity move, and we can add an acceleration component in order to make it accelerate in a particular direction.

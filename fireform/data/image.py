@@ -4,11 +4,23 @@ import fireform.geom
 class image(base):
 	"""Used to show an image!
 
-	It has the following properties:
-	- image - image name as string
-	- frame - numeric frame
-	- roation - clockwise, in degrees
-	- scale - float, percentage
+	:Attirbutes:
+		`image` : string
+			The name of the image to display.
+		`frame` : float
+			The frame of the animation to display. This will be rounded down when actually determining which frame to show.
+		`roation` : float
+			Rotation of the image. Clockwise, in degrees.
+		`scale` : :class:`fireform.geom.vector`
+			How the image should be stretched.
+		`speed` : float
+			The number of frames to advance per tick.
+		`alpha` : int
+			The opacity of the image, in the range of 0 to 255 inclusive. 255 is completely solid, 0 is invisible.
+		`blend` : string
+			Experimental.
+		`scissor` : :class:`fireform.entity.entity`
+			Experimental.
 	"""
 
 	__slots__ = [
