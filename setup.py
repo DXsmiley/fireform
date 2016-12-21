@@ -31,8 +31,11 @@ setup(
 
 	keywords = 'game',
 
+	packages = [
+		'fireform'
+	],
+
 	py_modules = [
-		'fireform',
 		'ff_animation_view'
 	]
 )
