@@ -63,6 +63,45 @@ Finally, we have to start the game. This line will block, so make sure it is at 
 
 If you run the code now you won't see much. That's because there's no entities in the game.
 
+Creating The Player
+-------------------
+
+Add the following code to the script. Make sure it comes before ``fireform.world.run``.
+
+.. code-block:: python
+
+	player = fireform.entity(
+		fireform.data.box(x = 0, y = 0, width = 60, height = 60)
+	)
+
+	world.add_entity(player)
+
+The ``fireform.entity`` function accepts an arbitrary number of arguments. Each argument is a single aspect of the entity. `fireform.data.box` represents the bounding box of the entity.
+
+If you run the code now you should see a green square in the middle of the window. This is the entity we have just created. If you hover your mouse over it you should get a description of the entity on the left hand side of the screen.
+
+Now lets add some motion to the object. We can add a velocity component to make the entity move, and we can add an acceleration component in order to make it accelerate in a particular direction.
+
+.. code-block:: python
+
+	player = fireform.entity(
+		fireform.data.box(x = 0, y = 0, width = 60, height = 60),
+		fireform.data.velocity(7, 4),
+		fireform.data.acceleration(-0.2, -0.05)
+	)
+
+If you run the game now, you should see the box move upwards and to the right, then turn around and exit on the right hand side of the screen.
+
+.. code-block:: python
+
+	player = fireform.entity(
+		fireform.data.box(x = 0, y = 0, width = 60, height = 60),
+		fireform.data.velocity(),
+		fireform.data.acceleration(),
+		fireform.data.friction(0.9, 0.9),
+		fireform.util.behaviour_eight_direction_movement(speed = 3)
+	)
+
 .. code-block:: python
 
 	# Load the resources. See resources.json for more details.
