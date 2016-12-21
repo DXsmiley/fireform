@@ -92,6 +92,10 @@ Now lets add some motion to the object. We can add a velocity component to make 
 
 If you run the game now, you should see the box move upwards and to the right, then turn around and exit on the right hand side of the screen.
 
+For this object to actually be the 'player', the user will have to be able to control it. Remove the arguments passed to the velocity and acceleration components so that the box is initially at rest.
+
+From here, we can add two more components to make the box controllable.
+
 .. code-block:: python
 
 	player = fireform.entity(
@@ -101,6 +105,17 @@ If you run the game now, you should see the box move upwards and to the right, t
 		fireform.data.friction(0.9, 0.9),
 		fireform.util.behaviour_eight_direction_movement(speed = 3)
 	)
+
+The friction component will ensure that the player doesn't reach ridiculous speeds and spiral out of control.
+
+Unlike the other components, ``behaviour_eight_direction_movement`` is a *behaviour*. This means that it responds to events that occur and will modify the entity. This particular behaviour listens for key press events and will set the acceleration of the entity when they happen.
+
+If you run the game now, you should be able to move the green box around the screen using the arrow keys.
+
+You can fiddle around with the values passed to friction and the movement behaviour in order to change how the box handles.
+
+Adding Graphics
+---------------
 
 .. code-block:: python
 
