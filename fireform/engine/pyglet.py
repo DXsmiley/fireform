@@ -180,7 +180,7 @@ class PygletSprite(pyglet.sprite.Sprite):
             clock.unschedule(self._animate)
             self._animation = None
 
-        if isinstance(img, image.Animation):
+        if isinstance(img, pyglet.image.Animation):
             self._animation = img
             self._frame_index = 0
             self._set_texture(img.frames[0].image.get_texture())
@@ -199,7 +199,7 @@ class PygletSprite(pyglet.sprite.Sprite):
 
     def _set_texture(self, texture):
         if texture.id is not self._texture.id:
-            self._group = SpriteGroup(texture,
+            self._group = pyglet.sprite.SpriteGroup(texture,
                                       self._group.blend_src,
                                       self._group.blend_dest,
                                       self._group.parent)
