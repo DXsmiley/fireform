@@ -3,8 +3,6 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
-import fireform
-
 with open('requirements.txt') as f:
 	requirements = f.read().splitlines()
 
@@ -16,7 +14,7 @@ The API is subject to change without notice.
 
 setup(
 	name = 'fireform',
-	version = fireform.VERSION,
+	version = '0.0.1',
 	# url = 'https://github.com/DXsmiley/edgy-json',
 	author = 'DXsmiley',
 	author_email = 'dxsmiley@hotmail.com',
