@@ -1,2 +1,2 @@
-pyglet
-sortedcontainers
+pyglet==1.2.4
+sortedcontainers==1.5.7

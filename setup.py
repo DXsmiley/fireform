@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 # Consistent encoding
 from codecs import open
 from os import path
@@ -34,6 +34,13 @@ setup(
 
 	install_requires = requirements,
 	include_package_data = True,
-	packages = find_packages()
+	packages = [
+		'fireform',
+		'fireform.data',
+		'fireform.engine',
+		'fireform.geom',
+		'fireform.system',
+		'fireform.util'
+	]
 
 )
