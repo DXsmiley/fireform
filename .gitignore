@@ -1,6 +1,5 @@
-# Ignore the example game folder until I remove the images that
-# Possibly have copyright issues
-example
+# Ignore the GIMP files.
+*.xcf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

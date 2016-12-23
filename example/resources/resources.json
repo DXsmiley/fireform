@@ -1,0 +1,26 @@
+{
+	"sheets":
+	{
+
+	},
+	"images":
+	{
+		"ship":
+		{
+			"y_offset": "55%"
+		},
+		"border": {},
+		"bullet":
+		{
+			"y_offset": 21
+		},
+		"space_background": {},
+		"stars": {},
+		"monster_cross": {},
+		"pink_particle": {}
+	},
+	"audio":
+	{
+
+	}
+}
