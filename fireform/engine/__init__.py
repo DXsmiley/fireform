@@ -23,7 +23,7 @@ def load(name):
 				Currently, only the ``'pyglet'`` engine is valid.
 	"""
 	global current
-	assert(cuttent == None)
+	assert(current == None)
 	print('Loading engine:', name)
 	if name == 'pyglet':
 		import fireform.engine.pyglet
