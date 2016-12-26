@@ -97,3 +97,33 @@ Press enter to enter and execute python code.
 | `time` | internal time |
 
 ## Filter Notation
+
+### Datum / Behaviour
+
+Just use the name of it.
+
+	box
+
+### Multiple requirements
+
+Put them next to each other, although it's probably better to just use a chain.
+
+	box velocity
+
+### Chain
+
+Use the `>` symbol.
+
+	box > velocity
+
+### Tags
+
+Use the name and a `#`.
+
+	#solid
+
+### Invert
+
+Preceed the rule with a `-`.
+
+	-box -#solid
