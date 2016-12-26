@@ -1,6 +1,6 @@
 from fireform.data.base import base
 
-class collision_bucket(base):
+class collision_mask(base):
 	""" Specifies the shape of the entity to be used when
 		considering collisions.
 
@@ -11,9 +11,9 @@ class collision_bucket(base):
 				- ``'rectangle'``
 	"""
 
-	name = 'collision_bucket'
+	__slots__ = ['_shape']
 
-	__slots__ = ['shape']
+	name = 'collision_mask'
 
 	def __init__(self, shape = 'circle'):
 		self.shape = shape

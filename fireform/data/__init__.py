@@ -13,3 +13,4 @@ from fireform.data.camera import *
 from fireform.data.box import *
 from fireform.data.friction import *
 from fireform.data.collision_bucket import *
+from fireform.data.collision_mask import *

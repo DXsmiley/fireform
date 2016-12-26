@@ -9,8 +9,59 @@ import fireform.data
 PARTITION_SIZE = 128
 
 
+def clamp(val, minimum, maximum):
+	return max(min(val, maximum), minimum)
+
+
 def check_overlap_y(a, b):
 	return a.box.bottom < b.box.top and b.box.bottom <  a.box.top
+
+
+def circle_unpack(e):
+	cx = (e.box.left + e.box.right) / 2
+	cy = (e.box.top + e.box.bottom) / 2
+	r = min(e.box.width, e.box.height) / 2
+	return cx, cy, r
+
+
+def check_overlap_rectangle_circle(a, b):
+	cx, cy, r = circle_unpack(b)
+	x = clamp(cx, a.box.left, a.box.right)
+	y = clamp(cy, a.box.bottom, a.box.top)
+	dx = cx - x
+	dy = cy - y
+	return dx * dx + dy * dy < r * r
+
+
+def check_overlap_circle_circle(a, b):
+	ax, ay, ar = circle_unpack(a)
+	bx, by, br = circle_unpack(b)
+	dx = ax - bx
+	dy = ay - by
+	tr = ar + br
+	f = dx * dx + dy * dy < tr * tr
+	return f
+
+
+MASK_JUMPTABLE = {
+	'rectangle-rectangle': lambda a, b: True,
+	'rectangle-circle': check_overlap_rectangle_circle,
+	'circle-circle': check_overlap_circle_circle
+}
+
+
+# Ensure that the jumptable works no
+# matter which order the mask types are
+for k, v in list(MASK_JUMPTABLE.items()):
+	n = k.split('-')
+	if n[1] != n[0]:
+		n = '{}-{}'.format(n[1], n[0])
+		MASK_JUMPTABLE[n] = lambda a, b: v(b, a)
+
+
+def check_overlap_masks(a, b):
+	j = get_mask(a) + '-' + get_mask(b)
+	return MASK_JUMPTABLE[j](a, b)
 
 
 def update_position_x(entities):
@@ -24,15 +75,18 @@ def update_position_y(entities):
 
 
 def get_bucket(entity):
-	if entity['collision_bucket']:
-		return entity['collision_bucket'].bucket
-	return 'default'
+	b = entity['collision_bucket']
+	return b.bucket if b else 'default'
 
 
 def is_extrovert(entity):
-	if entity['collision_bucket']:
-		return entity['collision_bucket'].extrovert
-	return False
+	b = entity['collision_bucket']
+	return b.extrovert if b else False
+
+
+def get_mask(entity):
+	c = entity['collision_mask']
+	return c._shape if c else 'rectangle'
 
 
 def group_by_bucket(entities):
@@ -58,7 +112,8 @@ class motion(base):
 
 	"""
 
-	def __init__(self, collision_mode = 'normal'):
+	def __init__(self, collision_mode = 'normal', ignore_masks = False):
+		self.ignore_masks = ignore_masks
 		self.collision_mode = collision_mode
 		if self.collision_mode not in ('disabled', 'normal', 'split'):
 			raise ValueError('collision_mode must be "disabled", "normal" or "split".')
@@ -165,10 +220,10 @@ class motion(base):
 							active[i].add(entity)
 
 		for a, b in collisions:
-			world.post_message_private(message.collision(a, b, direction_name), [a])
-			world.post_message_private(message.collision(b, a, direction_name), [b])
-
-		self.collisions_late.update(collisions)
+			if self.ignore_masks or check_overlap_masks(a, b):
+				world.post_message_private(message.collision(a, b, direction_name), [a])
+				world.post_message_private(message.collision(b, a, direction_name), [b])
+				self.collisions_late.add((a, b))
 
 		debug_sys = world.systems_by_name.get('fireform.system.debug')
 		if debug_sys:

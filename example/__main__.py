@@ -157,6 +157,7 @@ def make_player():
 		fireform.data.velocity(),
 		fireform.data.acceleration(friction = 0.94),
 		fireform.data.image('ship'),
+		fireform.data.collision_mask('circle'),
 		fireform.util.behaviour_eight_direction_movement(speed = 1),
 		fireform.util.behaviour_face_cursor(speed = 30),
 		behaviour_player(),
@@ -172,6 +173,7 @@ def make_bullet(x, y, x_to, y_to):
 			pos = (x, y),
 			size = (12, 12)
 		),
+		fireform.data.collision_mask('circle'),
 		fireform.data.velocity(x_to - x + random.randint(-10, 10), y_to - y + random.randint(-10, 10)).scale_to(80),
 		fireform.data.image('bullet', blend = 'add', rotation = math.degrees(math.atan2(x_to - x, y_to - y))),
 		tags = 'bullet'
