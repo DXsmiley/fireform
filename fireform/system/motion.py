@@ -109,6 +109,9 @@ class motion(base):
 				- If ``'split'``, motion will occur on each axis sperately. \
 					Collision events will have the ``direction`` attribute set \
 					either ``'horisontal'`` or ``'vertical'``.
+			`ignore_masks` : bool
+				If enabled, all entities will be treated as if they had rectangular
+				collision masks. Defaults to ``False``.
 
 	"""
 
