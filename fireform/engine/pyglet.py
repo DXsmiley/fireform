@@ -810,7 +810,7 @@ def get_camera_zoom(world):
 	cam_sys = world.systems_by_name.get('fireform.system.camera', None)
 	return 1 if cam_sys == None else cam_sys.scale
 
-def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 1, 1, 1), show_fps = False, mouse_sensitivity = 1):
+def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 1, 1, 1), show_fps = False, mouse_sensitivity = 1, **kwargs):
 	"""Create the window and run the game."""
 
 	global w_window_width
@@ -897,8 +897,9 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 	# 	# print('on_draw()')
 	# 	return pyglet.event.EVENT_HANDLED
 
-	TARGET_FPS = 60
-	INTERVAL = 1 / TARGET_FPS
+	TARGET_TICKS = kwargs.get('ticks_per_second', 60)
+	DRAW_EVERY = kwargs.get('draw_rate', 1)
+	INTERVAL = 1 / TARGET_TICKS
 
 	def update(delta_time):
 		# if delta_time > INTERVAL or True:
@@ -907,10 +908,14 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 		world.handle_message(fireform.message.mouse_move_raw(mouse_raw_x, mouse_raw_y))
 		world.handle_message(fireform.message.mouse_move(*translate_cursor(mouse_raw_x, mouse_raw_y)))
 		world.handle_message(fireform.message.tick())
-		game_window.clear()
-		world.handle_message(fireform.message.draw())
-		fps_display.draw()
-		# game_window.flip()
+		update.tick_counter += 1
+		if update.tick_counter % DRAW_EVERY == 0:
+			game_window.clear()
+			world.handle_message(fireform.message.draw())
+			fps_display.draw()
+			# game_window.flip()
+
+	update.tick_counter = 0
 
 	fps_display = pyglet.window.FPSDisplay(game_window)
 	pyglet.clock.schedule_interval_soft(update, INTERVAL)

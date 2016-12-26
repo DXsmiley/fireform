@@ -23,6 +23,13 @@ def run(*args, **kwargs):
 			Optional. Defaults to False.
 		`mouse_sensitivity` : int
 			Defaults to 1. Pending Deprecation.
+		`ticks_per_second` : int
+			The number of tick events that occur every second.
+		`draw_rate` : int
+			The frequency at which to re-draw the screen.
+			A value of ``1`` will redraw it every tick.
+			A value of ``2`` will redraw it every second tick.
+			Defaults to ``1``.
 
 	"""
 	fireform.engine.current.run(*args, **kwargs)
