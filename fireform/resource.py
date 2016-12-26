@@ -8,6 +8,17 @@ search_paths = []
 do_smooth_images = False
 
 def open_data(filename, mode = 'r'):
+	""" Opens a file found in the search paths.
+
+		:Parameters:
+			`filename` : str
+				The filename.
+			`mode` : str
+				The mode to open the file in.
+				This is the same as the ``mode`` parameter on the builtin ``open`` function.
+				Defaults to ``'r'`` (read, text mode).
+
+	"""
 	for i in search_paths:
 		try:
 			f = open(i + filename, mode)
@@ -18,6 +29,18 @@ def open_data(filename, mode = 'r'):
 	raise FileNotFoundError(e)
 
 def open_get_filename(filename, mode = 'rb'):
+	# """ Returns the full path of a file in fileform's resource search space.
+	#
+	# 	:Parameters:
+	# 		`filename` : str
+	# 			The filename.
+	# 		`mode` : str
+	# 			The mode to open the file in, since this works by trying to open a lot of different files.
+	# 			In practice this shouldn't be changed.
+	# 			This is the same as the ``mode`` parameter on the builtin ``open`` function.
+	# 			Defaults to ``'rb'``.
+	#
+	# """
 	for i in search_paths:
 		try:
 			f = open(i + filename, mode)
@@ -35,6 +58,21 @@ def process_anchor(value, size):
 	return int(value)
 
 def load(*paths, smooth_images = False):
+	""" Load resources.
+
+		:Parameters:
+			`paths` : str
+				File paths to search relative to the working directory of the game.
+
+				.. note:: This may be changed to be relative to the program directory of the game in the future.
+
+			`smooth_images` : bool
+				Set to ``True`` to smooth images when they are resized.
+				Most games should enable this. Pixel art games should not.
+				Defaults to false.
+
+	"""
+
 	global do_smooth_images
 	global cache
 	global search_paths

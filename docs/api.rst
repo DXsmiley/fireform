@@ -6,6 +6,7 @@ API Reference
 
 	engine
 	main
+	resource
 	world
 	entity
 	data
