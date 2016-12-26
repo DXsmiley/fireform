@@ -43,7 +43,7 @@ def load(world, filename, loader_rules = {}, extra_data = {}, debug = False, cal
 
 
 def json_load(*args, **kwargs):
-	load(**args, **kwargs)
+	load(*args, **kwargs)
 
 
 def json_parse(world, data, loader_rules = {}, extra_data = {}, debug = False, callback = lambda w, d: None):
