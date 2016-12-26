@@ -10,3 +10,4 @@ API Reference
 	entity
 	data
 	system
+	message

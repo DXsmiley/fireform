@@ -1,7 +1,21 @@
+"""
+
+	All inbuilt messages.
+
+"""
+
 import warnings
 
 class base():
-	"""Base message from which all other messages need to inherit."""
+	""" Base message from which all other messages need to inherit.
+
+		:Attributes:
+			`name` : string
+				The name of the message. Behaviour and systems that want to listen for a message
+				have to implement a function called ``m_name``. For example, if the message's name
+				was ``tick``, the behaviour would have to implement ``m_tick``.
+
+	"""
 
 	# This should be overridden by any class that inherits from this.
 	name = lambda self: self.__class__.__name__
@@ -15,6 +29,11 @@ class base():
 	# 	raise NotImplementedError('A message failed to specify a name')
 
 	def decipher_name(self):
+		""" Returns the name of the message.
+
+			This should be used instead of ``name``, since some older messages may use a function to
+			implement their name.
+		"""
 		if isinstance(self.name, str):
 			return self.name
 		else:
@@ -22,28 +41,39 @@ class base():
 			warnings.warn('Message type "{}" is using a function to implement its name'.format(n), DeprecationWarning)
 			return n
 
-class generic(base):
-	"""Generic messages hold no data.
 
-	They serve as a shortcut and not much else."""
+class generic(base):
+	""" Generic messages which hold no data.
+
+		:Attributes:
+			`name` : string
+				Name of the message.
+	"""
 
 	def __init__(self, my_name):
 		self.name = my_name
 
-def tick():
-	"""This message is dispatched once per game tick.
 
-	You shouldn't send it yourself."""
+def tick():
+	"""This message is dispatched once per game tick."""
 	return generic('tick')
 
-def draw():
-	"""This message is dispatched once per game tick, or whenever the screen is redrawn.
 
-	You shouldn't send it yourself."""
+def draw():
+	"""This message is dispatched whenever the screen is redrawn."""
 	return generic('draw')
 
+
 class key_press(base):
-	"""Signifies that a key was pressed."""
+	""" Signifies that a key was pressed.
+
+		:Attributes:
+			`key` : `fireform.input.key`
+				The key that was pressed.
+			`modifiers` : something
+				The modifier keys (shift, control, etc.) That were
+				being held when the key was pressed.
+	"""
 
 	name = 'key_press'
 
@@ -51,8 +81,18 @@ class key_press(base):
 		self.key = key
 		self.modifiers = modifiers
 
+
 class key_release(base):
-	"""Signifies that a key was released."""
+	""" Signifies that a key was released.
+
+		:Attributes:
+			`key` : `fireform.input.key`
+				The key that was released.
+			`modifiers` : something
+				The modifier keys (shift, control, etc.) That were
+				being held when the key was released.
+
+	"""
 
 	name = 'key_release'
 
@@ -60,30 +100,53 @@ class key_release(base):
 		self.key = key
 		self.modifiers = modifiers
 
+
 class new_entity(base):
-	"""Signifies that an entitiy was added to the world."""
+	""" Signifies that an entitiy was added to the world.
+
+		:Attributes:
+			`entity` : :class:`fireform.entity.entity`
+				The entity that was just added to the world.
+
+	"""
 
 	name = 'new_entity'
 
 	def __init__(self, entity):
 		self.entity = entity
 
+
 class dead_entity(base):
 	"""Signals that an entitity has been killed.
 
-	This is triggered when the world decides to remove it,
-	not when entity.kill() is called."""
+		This is triggered when the world decides to remove it,
+		not when entity.kill() is called.
+
+		:Attributes:
+			`entity` : :class:`fireform.entity.entity`
+				The dead entity.
+
+	"""
 
 	name = 'dead_entity'
 
 	def __init__(self, entity):
 		self.entity = entity
 
-class mouse_move(base):
-	"""Signifies that the mouse was moved.
 
-	This may not trigger if the mouse is moved
-	outside the window."""
+class mouse_move(base):
+	""" Signifies that the mouse was moved.
+
+		This may not trigger if the mouse is moved
+		outside the window.
+
+		:Attributes:
+			`x` : float
+				The x position of the cursor, within the world.
+			`y` : float
+				The y position of the cursor, within the world.
+
+	"""
 
 	name = 'mouse_move'
 
@@ -92,7 +155,17 @@ class mouse_move(base):
 		self.y = y
 
 class mouse_release(base):
-	"""Signifies the a mouse button was released."""
+	""" Signifies the a mouse button was released.
+
+		:Attributes:
+			`x` : float
+				The x position of the cursor, within the world.
+			`y` : float
+				The y position of the cursor, within the world.
+			`button` : something
+				The button that was released.
+
+	"""
 
 	name = 'mouse_release'
 
@@ -101,8 +174,19 @@ class mouse_release(base):
 		self.y = y
 		self.button = button
 
+
 class mouse_click(base):
-	"""Signifies the a mouse button was clicked."""
+	""" Signifies the a mouse button was clicked.
+
+		:Attributes:
+			`x` : float
+				The x position of the cursor, within the world.
+			`y` : float
+				The y position of the cursor, within the world.
+			`button` : something
+				The button that was pressed.
+
+	"""
 
 	name = 'mouse_click'
 
@@ -111,11 +195,20 @@ class mouse_click(base):
 		self.y = y
 		self.button = button
 
-class mouse_move_raw(base):
-	"""Signifies that the mouse was moved.
 
-	Gives the coordinates relative to window, not internal camera.
-	This may not trigger if the mouse is moved outside the window."""
+class mouse_move_raw(base):
+	""" Signifies that the mouse was moved.
+
+		This may not trigger if the mouse is moved
+		outside the window.
+
+		:Attributes:
+			`x` : float
+				The x position of the cursor, relative to the corner of the window.
+			`y` : float
+				The y position of the cursor, relative to the corner of the window.
+
+	"""
 
 	name = 'mouse_move_raw'
 
@@ -123,10 +216,19 @@ class mouse_move_raw(base):
 		self.x = x
 		self.y = y
 
-class mouse_click_raw(base):
-	"""Signifies the a mouse button was clicked.
 
-	Gives the coordinates relative to window, not internal camera."""
+class mouse_click_raw(base):
+	""" Signifies the a mouse button was clicked.
+
+		:Attributes:
+			`x` : float
+				The x position of the cursor, relative to the corner of the window.
+			`y` : float
+				The y position of the cursor, relative to the corner of the window.
+			`button` : something
+				The button that was pressed.
+
+	"""
 
 	name = 'mouse_click_raw'
 
@@ -135,10 +237,19 @@ class mouse_click_raw(base):
 		self.y = y
 		self.button = button
 
-class mouse_release_raw(base):
-	"""Signifies the a mouse button was released.
 
-	Gives the coordinates relative to window, not internal camera."""
+class mouse_release_raw(base):
+	""" Signifies the a mouse button was released.
+
+		:Attributes:
+			`x` : float
+				The x position of the cursor, relative to the corner of the window.
+			`y` : float
+				The y position of the cursor, relative to the corner of the window.
+			`button` : something
+				The button that was released.
+
+	"""
 
 	name = 'mouse_release_raw'
 
@@ -147,8 +258,17 @@ class mouse_release_raw(base):
 		self.y = y
 		self.button = button
 
+
 class window_resized(base):
-	"""Signifies that the window was resized."""
+	""" Signifies that the window was resized.
+
+		:Attributes:
+			`width` : int
+				The width of the window.
+			`height` : int
+				The height of the window.
+
+	"""
 
 	name = 'window_resized'
 
@@ -156,11 +276,22 @@ class window_resized(base):
 		self.width = width
 		self.height = height
 
-class collision(base):
-	"""Signals that two entities have overlapped.
 
-	fireform.system.motion will continue to send these until they
-	stop colliding (or trying to collide)
+class collision(base):
+	""" Signals that two entities have overlapped.
+
+		fireform.system.motion will send these once per tick until they
+		stop colliding.
+
+		This is sent as a private message, so only the entities that actually
+		collide will receive it.
+
+		:Attributes:
+			`other` : :class:`fireform.entity.entity`
+				The *other* entity.
+			`direction` : string
+				The direction in which the entities were moving when they collided.
+				This is only applicable when :class:`the collision mode is set to split<fireform.system.motion>`.
 	"""
 
 	name = 'collision'
@@ -173,6 +304,7 @@ class collision(base):
 
 	def __contains__(self, item):
 		return self.first == item or self.second == item
+
 
 class collision_late(base):
 	""" Signals that two entities have overlapped.
