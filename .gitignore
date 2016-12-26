@@ -1,6 +1,9 @@
 # Ignore the GIMP files.
 *.xcf
 
+# Profiler output
+profile.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
