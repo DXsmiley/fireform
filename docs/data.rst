@@ -1,6 +1,12 @@
 data
 ====
 
+base
+----
+
+.. autoclass:: fireform.data.base
+	:members:
+
 box
 ---
 
@@ -29,4 +35,16 @@ friction
 --------
 
 .. autoclass:: fireform.data.friction
+	:members:
+
+collision_bucket
+----------------
+
+.. autoclass:: fireform.data.collision_bucket
+	:members:
+
+camera
+------
+
+.. autoclass:: fireform.data.camera
 	:members:

@@ -5,7 +5,14 @@ class collision_bucket(base):
 		should be entered. Entities need to be in the same bucket
 		in order to recieve collision events.
 
-		Two entities that are both extroverts cannot collide with each other.
+		:Parameters:
+			`bucket`: string
+				The name of the bucket. Technically this can actually be
+				any type that can be hashed in order to be put into a dictionary
+			`extrovert`: bool
+				Whether the entity is 'extroverted'.
+				Two entities that are both extroverted cannot collide with each other.
+				Defaults to False.
 	"""
 
 	name = 'collision_bucket'

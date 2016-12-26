@@ -1,12 +1,19 @@
 import warnings
 
 class base:
-	"""Base class from which other data objects
-	should inherit"""
+	""" Base class from which other data objects should inherit
 
-	# def __init__(self):
-	# 	"""Override this, m9."""
-	# 	pass
+		:Attributes:
+			`name`: string
+				Specifies the name of the component. Should be overridden in the child class.
+				This is used when accessing the component as ``my_entity['name']``. Leave unset
+				to make this method of access not available.
+			`attribute_name`: string
+				This is used when accessing the component as ``my_entity.attribute_name``.
+				Leave unset to make this method of access not available.
+				It is advisiable not to set this except for components that are accessed very
+				frequently.
+	"""
 
 	name = None
 	attribute_name = None
