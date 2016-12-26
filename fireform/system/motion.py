@@ -44,9 +44,19 @@ def group_by_bucket(entities):
 
 
 class motion(base):
-	"""Makes things move around.
+	""" Moves entities around, handling velocity acceleration and friction.
 
-	Can also be set to check for collisions."""
+		Is also resposible for detecting collisions.
+
+		:Parameters:
+			`collision_mode` : string
+				- If ``'disabled'``, collisions will not be checked.
+				- If ``'normal'``, collisions will be checked.
+				- If ``'split'``, motion will occur on each axis sperately. \
+					Collision events will have the ``direction`` attribute set \
+					either ``'horisontal'`` or ``'vertical'``.
+
+	"""
 
 	def __init__(self, collision_mode = 'normal'):
 		self.collision_mode = collision_mode

@@ -33,7 +33,28 @@ def format_stats(s):
 class debug(base):
 	"""Usefull for debugging.
 
-	Draws boxes around objects that have a position and size."""
+		Draws boxes around objects that have a position and size.
+
+		:Parameters:
+			`text_colour` : tuple
+				Colour used to render text. Defaults to black.
+			`outline_colour` : tuple
+				Outline used for normal entities. Defaults to green.
+			`outline_colour_solid` : tuple
+				Outline used for solid entities. Defaults to bright green.
+			`outline_colour_hover` : tuple
+				Colour used to outline the entity the mouse is hovering over.
+				Defaults to cyan.
+			`outline_colour_hover` : tuple
+				Colour used to outline errored entities. Defaults to red.
+			`allow_edit` : bool
+				Setting to ``True`` will allow entities to be inspected, moved and
+				resized using the mouse. Defaults to ``False``.
+			`display` : bool
+				Setting to ``True`` will display information about the state of the
+				program. Defaults to ``True``.
+
+	"""
 
 	def __init__(self, **kwargs):
 		self.text_colour = kwargs.get('text_colour', (0, 0, 0, 255))
