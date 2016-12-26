@@ -329,6 +329,46 @@ class collision_late(base):
 		return self.first == item or self.second == item
 
 
+class collision_enter(base):
+	""" Signals that two entities have overlapped.
+
+		This is sent as a private message, so only the entities that actually
+		collide will receive it.
+
+		:Attributes:
+			`other` : :class:`fireform.entity.entity`
+				The *other* entity.
+	"""
+
+	name = 'collision_enter'
+
+	def __init__(self, other):
+		self.other = other
+
+	def __contains__(self, item):
+		return self.first == item or self.second == item
+
+
+class collision_exit(base):
+	""" Signals that two entities have stopped overlapping.
+
+		This is sent as a private message, so only the entities that actually
+		collide will receive it.
+
+		:Attributes:
+			`other` : :class:`fireform.entity.entity`
+				The *other* entity.
+	"""
+
+	name = 'collision_exit'
+
+	def __init__(self, other):
+		self.other = other
+
+	def __contains__(self, item):
+		return self.first == item or self.second == item
+
+
 class update_tracked_value(base):
 
 	name = 'update_tracked_value'

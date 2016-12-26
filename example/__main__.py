@@ -1,10 +1,4 @@
 import fireform
-# import fireform.resource
-# import fireform.world
-# import fireform.data
-# import fireform.entity
-# import fireform.system
-# import fireform.main
 import math
 import random
 
