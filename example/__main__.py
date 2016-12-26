@@ -16,6 +16,8 @@ world.add_system(fireform.system.camera()) # Needed to view the world
 world.add_system(fireform.system.image())  # Needed to draw images
 world.add_system(fireform.system.debug(allow_edit = True, text_colour = (255, 255, 255, 255)))  # Debug info
 
+# This will destroy any objects that leave the boundary of the game.
+# This is so that the world doesn't fill up with bullets and start lagging.
 class destroy_outside_things(fireform.system.base):
 
 	def __init__(self, limit = 5000):
@@ -36,8 +38,8 @@ class destroy_outside_things(fireform.system.base):
 
 world.add_system(destroy_outside_things())
 
-# Make the objects
-
+# Entities with this behaviour will gradually fade out.
+# Once they are no longer visible they will be destroyed.
 class behaviour_fade_away(fireform.behaviour.base):
 
 	def __init__(self, steps):
@@ -51,7 +53,7 @@ class behaviour_fade_away(fireform.behaviour.base):
 class behaviour_player(fireform.behaviour.base):
 
 	def __init__(self):
-		self.target = {'x': 0, 'y': 0}
+		self.target = {'x': 0, 'y': 0} # TODO: Replace this with a vector.
 		self.cooldown = 0
 		self.shooting = False
 
