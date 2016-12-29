@@ -23,7 +23,7 @@ def format_stats_small(s):
 
 def format_stats(s):
 	result = ''
-	for k, v in s.items():
+	for k, v in sorted(s.items()):
 		if isinstance(v, dict):
 			result += k + ':\n' + indent(format_stats(v))
 		else:
