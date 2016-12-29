@@ -12,11 +12,6 @@ import json
 import warnings
 import types
 
-class _nothing:
-	pass
-
-nothing = _nothing
-
 def load(world, filename, loader_rules = {}, extra_data = {}, debug = False, callback = lambda w, d: None):
 	""" Load a map from a file.
 
@@ -83,9 +78,7 @@ def json_parse(world, data, loader_rules = {}, extra_data = {}, debug = False, c
 							))
 						else:
 							result = rule(obj)
-							if result is nothing:
-								pass
-							elif isinstance(result, list):
+							if isinstance(result, list):
 								for i in result:
 									world.add_entity(i)
 							elif isinstance(result, fireform.entity.entity):
@@ -93,7 +86,7 @@ def json_parse(world, data, loader_rules = {}, extra_data = {}, debug = False, c
 							elif isinstance(result, types.GeneratorType):
 								for i in result:
 									world.add_entity(i)
-							else:
+							elif result is not None:
 								warnings.warn('Cannot add {} of type {} to world (from rule: \'{}\')'.format(result, type(result), layer_name))
 				else:
 					warnings.warn('No known rules for {}'.format(layer_name))
