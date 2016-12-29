@@ -111,7 +111,7 @@ def json_parse(world, data, loader_rules = {}, extra_data = {}, debug = False, c
 				ordering = layer.get('properties', {}).get('ordering', 0)
 				world.add_entity(fireform.tilemap.create(tile_arrays, tile_dim, image_names, ordering))
 			elif layer['type'] == 'imagelayer':
-				warnings.warn('Image layers are not fully implemented.')
+				# warnings.warn('Image layers are not fully implemented.')
 				# print(json.dumps(layer, indent = 4))
 				x = layer.get('offsetx', 0)
 				y = world.height - layer.get('offsety', 0)
