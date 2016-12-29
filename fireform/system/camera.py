@@ -14,11 +14,12 @@ def triangles(l, t, r, b):
 
 class camera_moved(fireform.message.base):
 
-	def __init__(self, x, y, scale):
+	name = 'camera_moved'
+
+	def __init__(self, x, y, scale, boundary):
+		self.boundary = boundary
 		self.x = x
 		self.y = y
-		# self.view_width
-		# self.view_height
 		self.scale = scale
 
 	def name(self):
@@ -65,7 +66,7 @@ class camera(base):
 		)
 
 	def m_tick(self, world, message):
-		world.handle_message(camera_moved(self.cam_x, self.cam_y, self.scale))
+		world.handle_message(camera_moved(self.cam_x, self.cam_y, self.scale, self.boundary()))
 
 	def m_draw(self, world, message):
 		self.cam_num = 0
@@ -85,7 +86,7 @@ class camera(base):
 		self.cam_x //= self.cam_num
 		self.cam_y //= self.cam_num
 		self.scale /= self.cam_num
-		world.handle_message(camera_moved(self.cam_x, self.cam_y, self.scale))
+		world.handle_message(camera_moved(self.cam_x, self.cam_y, self.scale, self.boundary()))
 		self.apply_matrix()
 
 	def m_window_resized(self, world, message):
