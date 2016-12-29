@@ -5,6 +5,7 @@ import inspect
 import fireform.message
 import fireform.efilter
 import fireform.util.timer
+import fireform.behaviour
 
 class world:
 	""" World used to control game events and ticks.
@@ -45,8 +46,12 @@ class world:
 		"""
 		assert(isinstance(entity, fireform.entity.entity))
 		self.entities.append(entity)
-		for t in self.message_types:
-			self.register_message_handler(entity, t)
+		for behaviour in entity.behaviours_list:
+			for message_type in fireform.behaviour.get_message_handles(behaviour):
+				self.message_handlers[message_type].append((entity, behaviour))
+				self.message_handlers_by_entity[entity][message_type].append(behaviour)
+		# for t in self.message_types:
+		# 	self.register_message_handler(entity, t)
 		self.filter_root.insert(entity)
 		self.handle_message(fireform.message.new_entity(entity))
 
@@ -74,19 +79,6 @@ class world:
 		self.systems_by_name[system.name()] = system
 		system.attach(self)
 
-	def register_message_handler(self, entity, message_type):
-		for behaviour in entity.behaviours_list:
-			if behaviour.can_handle_message(message_type):
-				self.message_handlers[message_type].append((entity, behaviour))
-				self.message_handlers_by_entity[entity][message_type].append(behaviour)
-
-	def register_message_type(self, mtype):
-		if mtype not in self.message_types:
-			self.message_types.add(mtype)
-			for i in self.entities:
-				if i.alive:
-					self.register_message_handler(i, mtype)
-
 	def handle_message_result(self, result):
 		# This feels wrong in so many ways...
 		# But the syntactic sugar is too sweet to ignore.
@@ -101,10 +93,9 @@ class world:
 		# and register the handlers on all existing entities
 		mtype = message.decipher_name()
 		# print('world handling', mtype)
-		self.register_message_type(mtype)
 		for i in self.systems:
 			self.handle_message_result(i.handle_message(self, message))
-		self.message_handlers[mtype] = list(filter(lambda e: e[0].alive, self.message_handlers[mtype]))
+		self.message_handlers[mtype][:] = list(filter(lambda e: e[0].alive, self.message_handlers[mtype]))
 		for entity, behaviour in self.message_handlers[mtype]:
 			self.handle_message_result(behaviour.handle_message(self, entity, message))
 
@@ -114,7 +105,6 @@ class world:
 	def handle_message_private(self, message, entities):
 		"""Used internally."""
 		mtype = message.decipher_name()
-		self.register_message_type(mtype)
 		for entity in entities:
 			for behaviour in self.message_handlers_by_entity[entity][mtype]:
 				self.handle_message_result(behaviour.handle_message(self, entity, message))

@@ -1,3 +1,22 @@
+import collections
+import inspect
+
+
+subscription_cache = {}
+
+
+def get_message_handles(behaviour):
+	global subscription_cache
+	the_class = behaviour.__class__
+	if the_class not in subscription_cache:
+		result = []
+		for name, func in inspect.getmembers(the_class):
+			if name.startswith('m_'):
+				result.append(name[2:])
+		subscription_cache[the_class] = result
+	return subscription_cache[the_class]
+
+
 class base:
 	"""Base class for behaviours.
 
@@ -21,6 +40,9 @@ class base:
 
 	def is_dead(self):
 		return hasattr(self, '_dead')
+
+	def listening_for(self):
+		print(self.__dict__)
 
 	# Weapons of a forgotten era
 	def name(self):
