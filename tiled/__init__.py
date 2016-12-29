@@ -106,9 +106,10 @@ def json_parse(world, data, loader_rules = {}, extra_data = {}, debug = False, c
 					warnings.warn('Rectangular tiles could not be handled. Assumed they were square.')
 				tdata = layer['data']
 				tile_arrays = [[tdata[x + (height - y - 1) * width] for y in range(height)] for x in range(width)]
-				image_name = data['tilesets'][0]['name']
+				# image_name = data['tilesets'][0]['name']
+				image_names = [i['name'] for i in data['tilesets']]
 				ordering = layer.get('properties', {}).get('ordering', 0)
-				world.add_entity(fireform.tilemap.create(tile_arrays, tile_dim, image_name, ordering))
+				world.add_entity(fireform.tilemap.create(tile_arrays, tile_dim, image_names, ordering))
 			elif layer['type'] == 'imagelayer':
 				warnings.warn('Image layers are not fully implemented.')
 				# print(json.dumps(layer, indent = 4))
