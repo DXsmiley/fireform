@@ -71,6 +71,7 @@ class debug(base):
 		self.mouse_y_last = 0
 		self.selected = False
 		self.targeted = None
+		self.inspecting = None
 		self.scaling = False
 		self.typing = False
 		self.text_input = ''
@@ -108,8 +109,9 @@ class debug(base):
 
 	def display_menu(self):
 		the_text = format_stats(self.stats) + '\n'
-		if self.allow_edit and self.targeted:
-			the_text += 'Entity selected:\n' + str(self.targeted)
+		the_entity = self.inspecting or self.targeted
+		if self.allow_edit and the_entity:
+			the_text += 'Entity selected:\n' + str(the_entity)
 		else:
 			the_text += 'Nothing selected'
 		the_text += '\n\n' + self.console_log
@@ -189,9 +191,17 @@ class debug(base):
 
 	def m_mouse_click(self, world, message):
 		if self.allow_edit:
-			if self.targeted and self.display_things:
-				self.selected = True
-				self.scaling = message.button == fireform.input.mouse.RIGHT
+			if message.button == fireform.input.mouse.LEFT:
+				if self.targeted and self.display_things:
+					self.selected = True
+					self.scaling = False
+			elif message.button == fireform.input.mouse.RIGHT:
+				if self.targeted and self.display_things:
+					self.selected = True
+					self.scaling = True
+			elif message.button == fireform.input.mouse.MIDDLE:
+				self.inspecting = self.targeted
+
 
 	def m_mouse_release(self, world, message):
 		self.selected = False
