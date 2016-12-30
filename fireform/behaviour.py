@@ -46,12 +46,10 @@ class base:
 
 	# Weapons of a forgotten era
 	def name(self):
-		return ''
+		return '_' + self.__class__.__name__
 
 	def has_name(self):
-		if isinstance(self.name, str):
-			return True
-		return self.name() != ''
+		return True
 
 	def decipher_name(self):
 		if isinstance(self.name, str):
