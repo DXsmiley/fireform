@@ -8,516 +8,518 @@ import math
 ############################################### Pyglet Replacements
 
 class PygletSprite(pyglet.sprite.Sprite):
-    """Used instead of pyglet's inbuilt sprite until
-    """
-    _batch = None
-    _animation = None
-    _rotation = 0
-    _opacity = 255
-    _rgb = (255, 255, 255)
-    _scale = 1.0
-    _scale_x = 1.0
-    _scale_y = 1.0
-    _visible = True
-    _vertex_list = None
-
-    def __init__(self,
-                 img, x=0, y=0,
-                 blend_src=pyglet.gl.GL_SRC_ALPHA,
-                 blend_dest=pyglet.gl.GL_ONE_MINUS_SRC_ALPHA,
-                 batch=None,
-                 group=None,
-                 usage='dynamic',
-                 subpixel=False):
-        '''Create a sprite.
-
-        :Parameters:
-            `img` : `AbstractImage` or `Animation`
-                Image or animation to display.
-            `x` : int
-                X coordinate of the sprite.
-            `y` : int
-                Y coordinate of the sprite.
-            `blend_src` : int
-                OpenGL blend source mode.  The default is suitable for
-                compositing sprites drawn from back-to-front.
-            `blend_dest` : int
-                OpenGL blend destination mode.  The default is suitable for
-                compositing sprites drawn from back-to-front.
-            `batch` : `Batch`
-                Optional batch to add the sprite to.
-            `group` : `Group`
-                Optional parent group of the sprite.
-            `usage` : str
-                Vertex buffer object usage hint, one of ``"none"``,
-                ``"stream"``, ``"dynamic"`` (default) or ``"static"``.  Applies
-                only to vertex data.
-            `subpixel` : bool
-                Allow floating-point coordinates for the sprite. By default,
-                coordinates are restricted to integer values.
-
-        '''
-        if batch is not None:
-            self._batch = batch
-
-        self._x = x
-        self._y = y
-
-        if isinstance(img, pyglet.image.Animation):
-            self._animation = img
-            self._frame_index = 0
-            self._texture = img.frames[0].image.get_texture()
-            self._next_dt = img.frames[0].duration
-            if self._next_dt:
-                clock.schedule_once(self._animate, self._next_dt)
-        else:
-            self._texture = img.get_texture()
-
-        self._group = pyglet.sprite.SpriteGroup(self._texture, blend_src, blend_dest, group)
-        self._usage = usage
-        self._subpixel = subpixel
-        self._create_vertex_list()
-
-    def __del__(self):
-        try:
-            if self._vertex_list is not None:
-                self._vertex_list.delete()
-        except:
-            pass
-
-    def delete(self):
-        '''Force immediate removal of the sprite from video memory.
-
-        This is often necessary when using batches, as the Python garbage
-        collector will not necessarily call the finalizer as soon as the
-        sprite is garbage.
-        '''
-        if self._animation:
-            clock.unschedule(self._animate)
-        self._vertex_list.delete()
-        self._vertex_list = None
-        self._texture = None
-
-        # Easy way to break circular reference, speeds up GC
-        self._group = None
-
-    def _animate(self, dt):
-        self._frame_index += 1
-        if self._frame_index >= len(self._animation.frames):
-            self._frame_index = 0
-            self.dispatch_event('on_animation_end')
-            if self._vertex_list is None:
-                return # Deleted in event handler.
-
-        frame = self._animation.frames[self._frame_index]
-        self._set_texture(frame.image.get_texture())
-
-        if frame.duration is not None:
-            duration = frame.duration - (self._next_dt - dt)
-            duration = min(max(0, duration), frame.duration)
-            clock.schedule_once(self._animate, duration)
-            self._next_dt = duration
-        else:
-            self.dispatch_event('on_animation_end')
-
-    def _set_batch(self, batch):
-        if self._batch == batch:
-            return
-
-        if batch is not None and self._batch is not None:
-            self._batch.migrate(self._vertex_list, GL_QUADS, self._group, batch)
-            self._batch = batch
-        else:
-            self._vertex_list.delete()
-            self._batch = batch
-            self._create_vertex_list()
-
-    def _get_batch(self):
-        return self._batch
-
-    batch = property(_get_batch, _set_batch,
-                     doc='''Graphics batch.
-
-    The sprite can be migrated from one batch to another, or removed from its
-    batch (for individual drawing).  Note that this can be an expensive
-    operation.
-
-    :type: `Batch`
-    ''')
-
-    def _set_group(self, group):
-        if self._group.parent == group:
-            return
-
-        self._group = SpriteGroup(self._texture,
-                                  self._group.blend_src,
-                                  self._group.blend_dest,
-                                  group)
-
-        if self._batch is not None:
-            self._batch.migrate(self._vertex_list, GL_QUADS, self._group,
-                                self._batch)
-
-    def _get_group(self):
-        return self._group.parent
-
-    group = property(_get_group, _set_group,
-                     doc='''Parent graphics group.
-
-    The sprite can change its rendering group, however this can be an
-    expensive operation.
-
-    :type: `Group`
-    ''')
-
-    def _get_image(self):
-        if self._animation:
-            return self._animation
-        return self._texture
-
-    def _set_image(self, img):
-        if self._animation is not None:
-            clock.unschedule(self._animate)
-            self._animation = None
-
-        if isinstance(img, pyglet.image.Animation):
-            self._animation = img
-            self._frame_index = 0
-            self._set_texture(img.frames[0].image.get_texture())
-            self._next_dt = img.frames[0].duration
-            if self._next_dt:
-                clock.schedule_once(self._animate, self._next_dt)
-        else:
-            self._set_texture(img.get_texture())
-        self._update_position()
-
-    image = property(_get_image, _set_image,
-                     doc='''Image or animation to display.
-
-    :type: `AbstractImage` or `Animation`
-    ''')
-
-    def _set_texture(self, texture):
-        if texture.id is not self._texture.id:
-            self._group = pyglet.sprite.SpriteGroup(texture,
-                                      self._group.blend_src,
-                                      self._group.blend_dest,
-                                      self._group.parent)
-            if self._batch is None:
-                self._vertex_list.tex_coords[:] = texture.tex_coords
-            else:
-                self._vertex_list.delete()
-                self._texture = texture
-                self._create_vertex_list()
-        else:
-            self._vertex_list.tex_coords[:] = texture.tex_coords
-        self._texture = texture
-
-    def _create_vertex_list(self):
-        if self._subpixel:
-            vertex_format = 'v2f/%s' % self._usage
-        else:
-            vertex_format = 'v2i/%s' % self._usage
-        if self._batch is None:
-            self._vertex_list = graphics.vertex_list(4,
-                vertex_format,
-                'c4B', ('t3f', self._texture.tex_coords))
-        else:
-            self._vertex_list = self._batch.add(4, pyglet.gl.GL_QUADS, self._group,
-                vertex_format,
-                'c4B', ('t3f', self._texture.tex_coords))
-        self._update_position()
-        self._update_color()
-
-    def _update_position(self):
-        img = self._texture
-        if not self._visible:
-            vertices = [0, 0, 0, 0, 0, 0, 0, 0]
-        elif self._rotation:
-            x1 = -img.anchor_x * self._scale_x
-            y1 = -img.anchor_y * self._scale_y
-            x2 = x1 + img.width * self._scale_x
-            y2 = y1 + img.height * self._scale_y
-            x = self._x
-            y = self._y
-
-            r = -math.radians(self._rotation)
-            cr = math.cos(r)
-            sr = math.sin(r)
-            ax = x1 * cr - y1 * sr + x
-            ay = x1 * sr + y1 * cr + y
-            bx = x2 * cr - y1 * sr + x
-            by = x2 * sr + y1 * cr + y
-            cx = x2 * cr - y2 * sr + x
-            cy = x2 * sr + y2 * cr + y
-            dx = x1 * cr - y2 * sr + x
-            dy = x1 * sr + y2 * cr + y
-            vertices = [ax, ay, bx, by, cx, cy, dx, dy]
-        elif self._scale_x != 1.0 or self._scale_y != 1.0:
-            x1 = self._x - img.anchor_x * self._scale_x
-            y1 = self._y - img.anchor_y * self._scale_y
-            x2 = x1 + img.width * self._scale_x
-            y2 = y1 + img.height * self._scale_y
-            vertices = [x1, y1, x2, y1, x2, y2, x1, y2]
-        else:
-            x1 = self._x - img.anchor_x
-            y1 = self._y - img.anchor_y
-            x2 = x1 + img.width
-            y2 = y1 + img.height
-            vertices = [x1, y1, x2, y1, x2, y2, x1, y2]
-        if not self._subpixel:
-            vertices = [int(v) for v in vertices]
-        self._vertex_list.vertices[:] = vertices
-
-    def _update_color(self):
-        r, g, b = self._rgb
-        self._vertex_list.colors[:] = [r, g, b, int(self._opacity)] * 4
-
-    def set_position(self, x, y):
-        '''Set the X and Y coordinates of the sprite simultaneously.
-
-        :Parameters:
-            `x` : int
-                X coordinate of the sprite.
-            `y` : int
-                Y coordinate of the sprite.
-
-        '''
-        self._x = x
-        self._y = y
-        self._update_position()
-
-    position = property(lambda self: (self._x, self._y),
-                        lambda self, t: self.set_position(*t),
-                        doc='''The (x, y) coordinates of the sprite.
-
-    :type: (int, int)
-    ''')
-
-    def _set_x(self, x):
-        self._x = x
-        self._update_position()
-
-    x = property(lambda self: self._x, _set_x,
-                 doc='''X coordinate of the sprite.
-
-    :type: int
-    ''')
-
-    def _set_y(self, y):
-        self._y = y
-        self._update_position()
-
-    y = property(lambda self: self._y, _set_y,
-                 doc='''Y coordinate of the sprite.
-
-    :type: int
-    ''')
-
-    def _set_rotation(self, rotation):
-        self._rotation = rotation
-        self._update_position()
-
-    rotation = property(lambda self: self._rotation, _set_rotation,
-                        doc='''Clockwise rotation of the sprite, in degrees.
-
-    The sprite image will be rotated about its image's (anchor_x, anchor_y)
-    position.
-
-    :type: float
-    ''')
-
-    def _set_scale(self, scale):
-        if isinstance(scale, tuple):
-            self._scale_x, self._scale_y = scale
-        else:
-            self._scale_x = self._scale_y = scale
-        self._update_position()
-
-    scale = property(lambda self: self._scale, _set_scale,
-                     doc='''Scaling factor.
-
-    A scaling factor of 1 (the default) has no effect.  A scale of 2 will draw
-    the sprite at twice the native size of its image.
-
-    :type: float
-    ''')
-
-    def _get_width(self):
-        if self._subpixel:
-            return self._texture.width * abs(self._scale_x)
-        else:
-            return int(self._texture.width * abs(self._scale_x))
-
-    width = property(_get_width,
-                     doc='''Scaled width of the sprite.
-
-    Read-only.  Invariant under rotation.
-
-    :type: int
-    ''')
-
-    def _get_height(self):
-        if self._subpixel:
-            return self._texture.height * abs(self._scale_y)
-        else:
-            return int(self._texture.height * abs(self._scale_y))
-
-    height = property(_get_height,
-                      doc='''Scaled height of the sprite.
-
-    Read-only.  Invariant under rotation.
-
-    :type: int
-    ''')
-
-    def _set_opacity(self, opacity):
-        self._opacity = opacity
-        self._update_color()
-
-    opacity = property(lambda self: self._opacity, _set_opacity,
-                       doc='''Blend opacity.
-
-    This property sets the alpha component of the colour of the sprite's
-    vertices.  With the default blend mode (see the constructor), this
-    allows the sprite to be drawn with fractional opacity, blending with the
-    background.
-
-    An opacity of 255 (the default) has no effect.  An opacity of 128 will
-    make the sprite appear translucent.
-
-    :type: int
-    ''')
-
-    def _set_color(self, rgb):
-        self._rgb = map(int, rgb)
-        self._update_color()
-
-    color = property(lambda self: self._rgb, _set_color,
-                       doc='''Blend color.
-
-    This property sets the color of the sprite's vertices. This allows the
-    sprite to be drawn with a color tint.
-
-    The color is specified as an RGB tuple of integers ``(red, green, blue)``.
-    Each color component must be in the range 0 (dark) to 255 (saturated).
-
-    :type: (int, int, int)
-    ''')
-
-    def _set_visible(self, visible):
-        self._visible = visible
-        self._update_position()
-
-    visible = property(lambda self: self._visible, _set_visible,
-                       '''True if the sprite will be drawn.
-
-    :type: bool
-    ''')
-
-    def draw(self):
-        '''Draw the sprite at its current position.
-
-        See the module documentation for hints on drawing multiple sprites
-        efficiently.
-        '''
-        self._group.set_state_recursive()
-        self._vertex_list.draw(GL_QUADS)
-        self._group.unset_state_recursive()
+	"""Used instead of pyglet's inbuilt sprite until
+	"""
+	_batch = None
+	_animation = None
+	_rotation = 0
+	_opacity = 255
+	_rgb = (255, 255, 255)
+	_scale = 1.0
+	_scale_x = 1.0
+	_scale_y = 1.0
+	_visible = True
+	_vertex_list = None
+
+	def __init__(self,
+				 img, x=0, y=0,
+				 blend_src=pyglet.gl.GL_SRC_ALPHA,
+				 blend_dest=pyglet.gl.GL_ONE_MINUS_SRC_ALPHA,
+				 batch=None,
+				 group=None,
+				 usage='dynamic',
+				 subpixel=False):
+		'''Create a sprite.
+
+		:Parameters:
+			`img` : `AbstractImage` or `Animation`
+				Image or animation to display.
+			`x` : int
+				X coordinate of the sprite.
+			`y` : int
+				Y coordinate of the sprite.
+			`blend_src` : int
+				OpenGL blend source mode.  The default is suitable for
+				compositing sprites drawn from back-to-front.
+			`blend_dest` : int
+				OpenGL blend destination mode.  The default is suitable for
+				compositing sprites drawn from back-to-front.
+			`batch` : `Batch`
+				Optional batch to add the sprite to.
+			`group` : `Group`
+				Optional parent group of the sprite.
+			`usage` : str
+				Vertex buffer object usage hint, one of ``"none"``,
+				``"stream"``, ``"dynamic"`` (default) or ``"static"``.  Applies
+				only to vertex data.
+			`subpixel` : bool
+				Allow floating-point coordinates for the sprite. By default,
+				coordinates are restricted to integer values.
+
+		'''
+		if batch is not None:
+			self._batch = batch
+
+		self._x = x
+		self._y = y
+
+		if isinstance(img, pyglet.image.Animation):
+			self._animation = img
+			self._frame_index = 0
+			self._texture = img.frames[0].image.get_texture()
+			self._next_dt = img.frames[0].duration
+			if self._next_dt:
+				clock.schedule_once(self._animate, self._next_dt)
+		else:
+			self._texture = img.get_texture()
+
+		self._group = pyglet.sprite.SpriteGroup(self._texture, blend_src, blend_dest, group)
+		self._usage = usage
+		self._subpixel = subpixel
+		self._create_vertex_list()
+
+	def __del__(self):
+		try:
+			if self._vertex_list is not None:
+				self._vertex_list.delete()
+		except:
+			pass
+
+	def delete(self):
+		'''Force immediate removal of the sprite from video memory.
+
+		This is often necessary when using batches, as the Python garbage
+		collector will not necessarily call the finalizer as soon as the
+		sprite is garbage.
+		'''
+		if self._animation:
+			clock.unschedule(self._animate)
+		self._vertex_list.delete()
+		self._vertex_list = None
+		self._texture = None
+
+		# Easy way to break circular reference, speeds up GC
+		self._group = None
+
+	def _animate(self, dt):
+		self._frame_index += 1
+		if self._frame_index >= len(self._animation.frames):
+			self._frame_index = 0
+			self.dispatch_event('on_animation_end')
+			if self._vertex_list is None:
+				return # Deleted in event handler.
+
+		frame = self._animation.frames[self._frame_index]
+		self._set_texture(frame.image.get_texture())
+
+		if frame.duration is not None:
+			duration = frame.duration - (self._next_dt - dt)
+			duration = min(max(0, duration), frame.duration)
+			clock.schedule_once(self._animate, duration)
+			self._next_dt = duration
+		else:
+			self.dispatch_event('on_animation_end')
+
+	def _set_batch(self, batch):
+		if self._batch == batch:
+			return
+
+		if batch is not None and self._batch is not None:
+			self._batch.migrate(self._vertex_list, GL_QUADS, self._group, batch)
+			self._batch = batch
+		else:
+			self._vertex_list.delete()
+			self._batch = batch
+			self._create_vertex_list()
+
+	def _get_batch(self):
+		return self._batch
+
+	batch = property(_get_batch, _set_batch,
+					 doc='''Graphics batch.
+
+	The sprite can be migrated from one batch to another, or removed from its
+	batch (for individual drawing).  Note that this can be an expensive
+	operation.
+
+	:type: `Batch`
+	''')
+
+	def _set_group(self, group):
+		if self._group.parent == group:
+			return
+
+		self._group = SpriteGroup(self._texture,
+								  self._group.blend_src,
+								  self._group.blend_dest,
+								  group)
+
+		if self._batch is not None:
+			self._batch.migrate(self._vertex_list, GL_QUADS, self._group,
+								self._batch)
+
+	def _get_group(self):
+		return self._group.parent
+
+	group = property(_get_group, _set_group,
+					 doc='''Parent graphics group.
+
+	The sprite can change its rendering group, however this can be an
+	expensive operation.
+
+	:type: `Group`
+	''')
+
+	def _get_image(self):
+		if self._animation:
+			return self._animation
+		return self._texture
+
+	def _set_image(self, img):
+		if self._animation is not None:
+			clock.unschedule(self._animate)
+			self._animation = None
+
+		if isinstance(img, pyglet.image.Animation):
+			self._animation = img
+			self._frame_index = 0
+			self._set_texture(img.frames[0].image.get_texture())
+			self._next_dt = img.frames[0].duration
+			if self._next_dt:
+				clock.schedule_once(self._animate, self._next_dt)
+		else:
+			self._set_texture(img.get_texture())
+		self._update_position()
+
+	image = property(_get_image, _set_image,
+					 doc='''Image or animation to display.
+
+	:type: `AbstractImage` or `Animation`
+	''')
+
+	def _set_texture(self, texture):
+		if texture.id is not self._texture.id:
+			self._group = pyglet.sprite.SpriteGroup(texture,
+									  self._group.blend_src,
+									  self._group.blend_dest,
+									  self._group.parent)
+			if self._batch is None:
+				self._vertex_list.tex_coords[:] = texture.tex_coords
+			else:
+				self._vertex_list.delete()
+				self._texture = texture
+				self._create_vertex_list()
+		else:
+			self._vertex_list.tex_coords[:] = texture.tex_coords
+		self._texture = texture
+
+	def _create_vertex_list(self):
+		if self._subpixel:
+			vertex_format = 'v2f/%s' % self._usage
+		else:
+			vertex_format = 'v2i/%s' % self._usage
+		if self._batch is None:
+			self._vertex_list = graphics.vertex_list(4,
+				vertex_format,
+				'c4B', ('t3f', self._texture.tex_coords))
+		else:
+			self._vertex_list = self._batch.add(4, pyglet.gl.GL_QUADS, self._group,
+				vertex_format,
+				'c4B', ('t3f', self._texture.tex_coords))
+		self._update_position()
+		self._update_color()
+
+	def _update_position(self):
+		img = self._texture
+		if not self._visible:
+			vertices = [0, 0, 0, 0, 0, 0, 0, 0]
+		elif self._rotation:
+			x1 = -img.anchor_x * self._scale_x
+			y1 = -img.anchor_y * self._scale_y
+			x2 = x1 + img.width * self._scale_x
+			y2 = y1 + img.height * self._scale_y
+			x = self._x
+			y = self._y
+
+			r = -math.radians(self._rotation)
+			cr = math.cos(r)
+			sr = math.sin(r)
+			ax = x1 * cr - y1 * sr + x
+			ay = x1 * sr + y1 * cr + y
+			bx = x2 * cr - y1 * sr + x
+			by = x2 * sr + y1 * cr + y
+			cx = x2 * cr - y2 * sr + x
+			cy = x2 * sr + y2 * cr + y
+			dx = x1 * cr - y2 * sr + x
+			dy = x1 * sr + y2 * cr + y
+			vertices = [ax, ay, bx, by, cx, cy, dx, dy]
+		elif self._scale_x != 1.0 or self._scale_y != 1.0:
+			x1 = self._x - img.anchor_x * self._scale_x
+			y1 = self._y - img.anchor_y * self._scale_y
+			x2 = x1 + img.width * self._scale_x
+			y2 = y1 + img.height * self._scale_y
+			vertices = [x1, y1, x2, y1, x2, y2, x1, y2]
+		else:
+			x1 = self._x - img.anchor_x
+			y1 = self._y - img.anchor_y
+			x2 = x1 + img.width
+			y2 = y1 + img.height
+			vertices = [x1, y1, x2, y1, x2, y2, x1, y2]
+		if not self._subpixel:
+			vertices = [int(v) for v in vertices]
+		self._vertex_list.vertices[:] = vertices
+
+	def _update_color(self):
+		r, g, b = self._rgb
+		self._vertex_list.colors[:] = [r, g, b, int(self._opacity)] * 4
+
+	def set_position(self, x, y):
+		'''Set the X and Y coordinates of the sprite simultaneously.
+
+		:Parameters:
+			`x` : int
+				X coordinate of the sprite.
+			`y` : int
+				Y coordinate of the sprite.
+
+		'''
+		self._x = x
+		self._y = y
+		self._update_position()
+
+	position = property(lambda self: (self._x, self._y),
+						lambda self, t: self.set_position(*t),
+						doc='''The (x, y) coordinates of the sprite.
+
+	:type: (int, int)
+	''')
+
+	def _set_x(self, x):
+		self._x = x
+		self._update_position()
+
+	x = property(lambda self: self._x, _set_x,
+				 doc='''X coordinate of the sprite.
+
+	:type: int
+	''')
+
+	def _set_y(self, y):
+		self._y = y
+		self._update_position()
+
+	y = property(lambda self: self._y, _set_y,
+				 doc='''Y coordinate of the sprite.
+
+	:type: int
+	''')
+
+	def _set_rotation(self, rotation):
+		self._rotation = rotation
+		self._update_position()
+
+	rotation = property(lambda self: self._rotation, _set_rotation,
+						doc='''Clockwise rotation of the sprite, in degrees.
+
+	The sprite image will be rotated about its image's (anchor_x, anchor_y)
+	position.
+
+	:type: float
+	''')
+
+	def _set_scale(self, scale):
+		if isinstance(scale, tuple):
+			self._scale_x, self._scale_y = scale
+		else:
+			self._scale_x = self._scale_y = scale
+		self._update_position()
+
+	scale = property(lambda self: self._scale, _set_scale,
+					 doc='''Scaling factor.
+
+	A scaling factor of 1 (the default) has no effect.  A scale of 2 will draw
+	the sprite at twice the native size of its image.
+
+	:type: float
+	''')
+
+	def _get_width(self):
+		if self._subpixel:
+			return self._texture.width * abs(self._scale_x)
+		else:
+			return int(self._texture.width * abs(self._scale_x))
+
+	width = property(_get_width,
+					 doc='''Scaled width of the sprite.
+
+	Read-only.  Invariant under rotation.
+
+	:type: int
+	''')
+
+	def _get_height(self):
+		if self._subpixel:
+			return self._texture.height * abs(self._scale_y)
+		else:
+			return int(self._texture.height * abs(self._scale_y))
+
+	height = property(_get_height,
+					  doc='''Scaled height of the sprite.
+
+	Read-only.  Invariant under rotation.
+
+	:type: int
+	''')
+
+	def _set_opacity(self, opacity):
+		self._opacity = opacity
+		self._update_color()
+
+	opacity = property(lambda self: self._opacity, _set_opacity,
+					   doc='''Blend opacity.
+
+	This property sets the alpha component of the colour of the sprite's
+	vertices.  With the default blend mode (see the constructor), this
+	allows the sprite to be drawn with fractional opacity, blending with the
+	background.
+
+	An opacity of 255 (the default) has no effect.  An opacity of 128 will
+	make the sprite appear translucent.
+
+	:type: int
+	''')
+
+	def _set_color(self, rgb):
+		self._rgb = map(int, rgb)
+		self._update_color()
+
+	color = property(lambda self: self._rgb, _set_color,
+					   doc='''Blend color.
+
+	This property sets the color of the sprite's vertices. This allows the
+	sprite to be drawn with a color tint.
+
+	The color is specified as an RGB tuple of integers ``(red, green, blue)``.
+	Each color component must be in the range 0 (dark) to 255 (saturated).
+
+	:type: (int, int, int)
+	''')
+
+	def _set_visible(self, visible):
+		self._visible = visible
+		self._update_position()
+
+	visible = property(lambda self: self._visible, _set_visible,
+					   '''True if the sprite will be drawn.
+
+	:type: bool
+	''')
+
+	def draw(self):
+		'''Draw the sprite at its current position.
+
+		See the module documentation for hints on drawing multiple sprites
+		efficiently.
+		'''
+		self._group.set_state_recursive()
+		self._vertex_list.draw(GL_QUADS)
+		self._group.unset_state_recursive()
 
 def clamp(value, minimum, maximum):
-    return max(min(value, maximum), minimum)
+	return max(min(value, maximum), minimum)
 
 def mir_lerp(start, end, from_start, from_end, value):
-    perc = float(value - from_start) / float(from_end - from_start)
-    perc = clamp(perc, 0.0, 1.0)
-    return start + (end - start) * perc
+	perc = float(value - from_start) / float(from_end - from_start)
+	perc = clamp(perc, 0.0, 1.0)
+	return start + (end - start) * perc
 
 class CroppedSprite(PygletSprite):
 
-    crop_box = None
-    _original_texture_coords = None
+	crop_box = None
+	_original_texture_coords = None
+	_scale_x = 1.0
+	_scale_y = 1.0
 
-    def _crop(self, x1, y1, x2, y2):
-        if self.crop_box != None:
-            kl, kb, kr, kt = self.crop_box
-            return (
-                clamp(x1, kl, kr),
-                clamp(y1, kb, kt),
-                clamp(x2, kl, kr),
-                clamp(y2, kb, kt)
-            )
-        return (x1, y1, x2, y2)
+	def _crop(self, x1, y1, x2, y2):
+		if self.crop_box != None:
+			kl, kb, kr, kt = self.crop_box
+			return (
+				clamp(x1, kl, kr),
+				clamp(y1, kb, kt),
+				clamp(x2, kl, kr),
+				clamp(y2, kb, kt)
+			)
+		return (x1, y1, x2, y2)
 
-    def _crop_texture(self, x1, y1, x2, y2):
-        if self.crop_box != None:
-            if self._original_texture_coords == None:
-                if any(self._vertex_list.tex_coords):
-                    self._original_texture_coords = self._vertex_list.tex_coords[:]
-            else:
-                l = self._original_texture_coords[0]
-                r = self._original_texture_coords[3]
-                b = self._original_texture_coords[1]
-                t = self._original_texture_coords[7]
-                kl, kb, kr, kt = self.crop_box
-                tl = mir_lerp(l, r, x1, x2, kl)
-                tr = mir_lerp(l, r, x1, x2, kr)
-                tb = mir_lerp(b, t, y1, y2, kb)
-                tt = mir_lerp(b, t, y1, y2, kt)
-                if self._scale_x < 0:
-                    tl, tr = tr, tl
-                if self._scale_y < 0:
-                    tb, tt = tt, tb
-                self._vertex_list.tex_coords[:] = (
-                    tl, tb, 0.,
-                    tr, tb, 0.,
-                    tr, tt, 0.,
-                    tl, tt, 0.
-                )
+	def _crop_texture(self, x1, y1, x2, y2):
+		if self.crop_box != None:
+			if self._original_texture_coords == None:
+				if any(self._vertex_list.tex_coords):
+					self._original_texture_coords = self._vertex_list.tex_coords[:]
+			else:
+				l = self._original_texture_coords[0]
+				r = self._original_texture_coords[3]
+				b = self._original_texture_coords[1]
+				t = self._original_texture_coords[7]
+				kl, kb, kr, kt = self.crop_box
+				tl = mir_lerp(l, r, x1, x2, kl)
+				tr = mir_lerp(l, r, x1, x2, kr)
+				tb = mir_lerp(b, t, y1, y2, kb)
+				tt = mir_lerp(b, t, y1, y2, kt)
+				if self._scale_x < 0:
+					tl, tr = tr, tl
+				if self._scale_y < 0:
+					tb, tt = tt, tb
+				self._vertex_list.tex_coords[:] = (
+					tl, tb, 0.,
+					tr, tb, 0.,
+					tr, tt, 0.,
+					tl, tt, 0.
+				)
 
-    def _update_position(self):
-        img = self._texture
-        if not self._visible:
-            vertices = [0, 0, 0, 0, 0, 0, 0, 0]
-        elif self._rotation:
-            # raise NotImplementedError('Cropped Sprites do not support roation')
-            x1 = -img.anchor_x * self._scale_x
-            y1 = -img.anchor_y * self._scale_y
-            x2 = x1 + img.width * self._scale_x
-            y2 = y1 + img.height * self._scale_y
-            x = self._x
-            y = self._y
-            r = -math.radians(self._rotation)
-            cr = math.cos(r)
-            sr = math.sin(r)
-            ax = x1 * cr - y1 * sr + x
-            ay = x1 * sr + y1 * cr + y
-            bx = x2 * cr - y1 * sr + x
-            by = x2 * sr + y1 * cr + y
-            cx = x2 * cr - y2 * sr + x
-            cy = x2 * sr + y2 * cr + y
-            dx = x1 * cr - y2 * sr + x
-            dy = x1 * sr + y2 * cr + y
-            vertices = [ax, ay, bx, by, cx, cy, dx, dy]
-        elif self._scale_x != 1.0 or self._scale_y != 1.0:
-            x1 = self._x - img.anchor_x * self._scale_x
-            y1 = self._y - img.anchor_y * self._scale_y
-            x2 = x1 + img.width * self._scale_x
-            y2 = y1 + img.height * self._scale_y
-            self._crop_texture(x1, y1, x2, y2)
-            x1, y1, x2, y2 = self._crop(x1, y1, x2, y2)
-            vertices = [x1, y1, x2, y1, x2, y2, x1, y2]
-        else:
-            x1 = self._x - img.anchor_x
-            y1 = self._y - img.anchor_y
-            x2 = x1 + img.width
-            y2 = y1 + img.height
-            self._crop_texture(x1, y1, x2, y2)
-            x1, y1, x2, y2 = self._crop(x1, y1, x2, y2)
-            vertices = [x1, y1, x2, y1, x2, y2, x1, y2]
-        if not self._subpixel:
-            vertices = [int(v) for v in vertices]
-        self._vertex_list.vertices[:] = vertices
+	def _update_position(self):
+		img = self._texture
+		if not self._visible:
+			vertices = [0, 0, 0, 0, 0, 0, 0, 0]
+		elif self._rotation:
+			# raise NotImplementedError('Cropped Sprites do not support roation')
+			x1 = -img.anchor_x * self._scale_x
+			y1 = -img.anchor_y * self._scale_y
+			x2 = x1 + img.width * self._scale_x
+			y2 = y1 + img.height * self._scale_y
+			x = self._x
+			y = self._y
+			r = -math.radians(self._rotation)
+			cr = math.cos(r)
+			sr = math.sin(r)
+			ax = x1 * cr - y1 * sr + x
+			ay = x1 * sr + y1 * cr + y
+			bx = x2 * cr - y1 * sr + x
+			by = x2 * sr + y1 * cr + y
+			cx = x2 * cr - y2 * sr + x
+			cy = x2 * sr + y2 * cr + y
+			dx = x1 * cr - y2 * sr + x
+			dy = x1 * sr + y2 * cr + y
+			vertices = [ax, ay, bx, by, cx, cy, dx, dy]
+		elif self._scale_x != 1.0 or self._scale_y != 1.0:
+			x1 = self._x - img.anchor_x * self._scale_x
+			y1 = self._y - img.anchor_y * self._scale_y
+			x2 = x1 + img.width * self._scale_x
+			y2 = y1 + img.height * self._scale_y
+			self._crop_texture(x1, y1, x2, y2)
+			x1, y1, x2, y2 = self._crop(x1, y1, x2, y2)
+			vertices = [x1, y1, x2, y1, x2, y2, x1, y2]
+		else:
+			x1 = self._x - img.anchor_x
+			y1 = self._y - img.anchor_y
+			x2 = x1 + img.width
+			y2 = y1 + img.height
+			self._crop_texture(x1, y1, x2, y2)
+			x1, y1, x2, y2 = self._crop(x1, y1, x2, y2)
+			vertices = [x1, y1, x2, y1, x2, y2, x1, y2]
+		if not self._subpixel:
+			vertices = [int(v) for v in vertices]
+		self._vertex_list.vertices[:] = vertices
 
 ############################################### UTILITIES
 
