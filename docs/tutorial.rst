@@ -94,7 +94,7 @@ Now lets add some motion to the object. We can add a velocity component to make 
 		fireform.data.acceleration(-0.2, -0.05)
 	)
 
-If you run the game now, you should see the box move upwards and to the right, then turn around and exit on the right hand side of the screen.
+If you run the game now, you should see the box move upwards and to the right, then turn around and exit on the left hand side of the screen.
 
 For this object to actually be the 'player', the user will have to be able to control it. Remove the arguments passed to the velocity and acceleration components so that the box is initially at rest.
 
