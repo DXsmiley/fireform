@@ -1,5 +1,5 @@
 tiled
 =====
 
-.. automodule:: tiled
+.. automodule:: fireform.tiled
 	:members:
