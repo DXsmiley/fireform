@@ -673,6 +673,45 @@ class batch:
 	def draw(self):
 		self.batch.draw()
 
+############################################### SOUND
+
+class sound:
+
+	__slots__ = ['media_object']
+
+	def __init__(self, file_object, stream = False):
+		self.media_object = pyglet.media.load(
+			'file.wav',
+			file = file_object,
+			streaming = stream
+		)
+
+class sound_player:
+
+	__slots__ = ['player']
+
+	def __init__(self, *sounds, volume = 1.0, paused = False):
+		self.player = pyglet.media.Player()
+		self.volume = volume
+		for i in sounds:
+			self.player.queue(i.media_object)
+		if not paused:
+			self.player.play()
+
+	@property
+	def volume(self):
+		return self.player.volume
+
+	@volume.setter
+	def volume(self, value):
+		self.player.volume = max(0, min(1, value))
+
+	def play(self):
+		self.player.play()
+
+	def pause(self):
+		self.player.pause()
+
 ############################################### TEXT LABELS
 
 class text:

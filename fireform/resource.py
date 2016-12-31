@@ -146,12 +146,11 @@ def image_size(name):
 
 
 def audio(name, data = {}):
-	raise NotImplementedError('Audio data cannot be loaded at the moment')
 	if name not in audio_cache:
 		filename = data.get('filename', name + '.wav')
-		audio_cache[name] = ENGINE.resource.media(
-			open_get_filename(filename),
-			streaming = data.get('stream', False)
+		audio_cache[name] = fireform.engine.current.sound(
+			open_data(filename, 'rb'),
+			stream = data.get('stream', False)
 		)
 	return audio_cache[name]
 
