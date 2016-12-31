@@ -1,51 +1,58 @@
-#
 # Used to preview animations.
-#
-# python animation.py [image name] [animation speed] [scale factor]
-#
 
 HELP = """\
 Usage:
-	python animation.py [resource paths] -i [image name] -f [frame rate] -s [scale factor]
+	python -m ff_animation_view [resource paths] -i [image name] -f [frame rate] -s [scale factor]
+
+resource paths - The paths in which to search for image files.
+	These should be the same as the paths passed to `fireform.resource.load`.
+frame rate - The number of frames per second.
+scale factor - A decimal. Will scale the image up or down.
+
+While the program is running, you can press R to reload the image.\
 """
 
 import fireform
 import random
 import sys
 
-fireform.engine.load('pyglet')
 
-world = fireform.world.world()
+arguments = sys.argv[1:][::-1]
 
-world.add_system(fireform.system.camera())
-world.add_system(fireform.system.image())
 
-# print(sys.argv)
+def next_argument():
+	return arguments.pop()
 
-if len(sys.argv) == 1:
+
+if len(arguments) == 0:
+
 	print(HELP)
+
 else:
+
+	fireform.engine.load('pyglet')
+
+	world = fireform.world.world()
+
+	world.add_system(fireform.system.camera())
+	world.add_system(fireform.system.image())
+
 
 	name = 'image'
 	speed = 1
 	scale = 1
 	paths = []
 
-	i = 1
-	while i < len(sys.argv):
-		a = sys.argv[i]
+	while arguments:
+		a = next_argument()
 		if a == '-i':
-			i += 1
-			name = sys.argv[i]
+			name = next_argument()
 		elif a == '-f':
-			i += 1
-			speed = float(sys.argv[i])
+			speed = float(next_argument()) / 60.0
 		elif a == '-s':
-			i += 1
-			scale = float(sys.argv[i])
+			scale = float(next_argument())
 		else:
 			paths.append(a)
-		i += 1
 
 	fireform.resource.load(*paths, smooth_images = False)
 
