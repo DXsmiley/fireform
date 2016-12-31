@@ -54,6 +54,7 @@ class world:
 		# 	self.register_message_handler(entity, t)
 		self.filter_root.insert(entity)
 		self.handle_message(fireform.message.new_entity(entity))
+		return entity
 
 	def add_entities(self, entities):
 		"""Add multiple entities to the world.
