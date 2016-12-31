@@ -67,6 +67,7 @@ class behaviour_player(fireform.behaviour.base):
 				self.target['x'],
 				self.target['y']
 			))
+			fireform.audio.play('shoot', volume = 0.4)
 
 	def m_mouse_move(self, world, entity, message):
 		self.target['x'] = message.x
@@ -97,6 +98,7 @@ class behaviour_monster(fireform.behaviour.base):
 			force = fireform.geom.vector(*other.velocity).normalised(6)
 			entity.velocity.x += force.x
 			entity.velocity.y += force.y
+			fireform.audio.play('hit')
 		if self.health == 0:
 			entity.kill()
 
