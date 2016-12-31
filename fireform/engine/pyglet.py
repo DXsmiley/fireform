@@ -595,6 +595,9 @@ class image_grid:
 	def get_strip(self, a, b):
 		return [image(texture = x) for x in self.grid[a:b]]
 
+	def get_frame(self, frame):
+		return image(texture = self.grid[frame])
+
 
 class sprite:
 

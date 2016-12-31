@@ -99,17 +99,28 @@ def load(*paths, smooth_images = False):
 			with open_data(name + '.png', 'rb') as file_object:
 				image = fireform.engine.current.image(file_object)
 				# image_grid = ENGINE.image.ImageGrid(image, data.get('y_tiles', 1), data.get('x_tiles', 1))
-				image_grid = fireform.engine.current.image_grid(image, data.get('x_tiles', 1), data.get('y_tiles', 1))
+				x_tiles = data.get('x_tiles', 1)
+				y_tiles = data.get('y_tiles', 1)
+				image_grid = fireform.engine.current.image_grid(image, x_tiles, y_tiles)
 				data['smooth'] = data.get('smooth', smooth_images)
+				# Animations go from top to bottom rather than bottom to top.
+				reverse_y_order = data.get('reverse_y_order', False)
 				for strip_name, strip_range in data['strips'].items():
 					if isinstance(strip_range, int):
 						a = strip_range
 						b = a + 1
 					else:
 						a, b = strip_range
-					cache[strip_name] = image_grid.get_strip(a, b)
-					for i in cache[strip_name]:
-						set_image_properties(i, data)
+					cache[strip_name] = []
+					for index in range(a, b):
+						x = index % x_tiles
+						y = index // x_tiles
+						if reverse_y_order:
+							y = y_tiles - 1 - y
+						index = x_tiles * y + x
+						frame = image_grid.get_frame(index)
+						set_image_properties(frame, data)
+						cache[strip_name].append(frame)
 
 		for name_string, data in resources_json.get('images', {}).items():
 			for name in [i.strip() for i in name_string.split(', ')]:

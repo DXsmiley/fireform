@@ -66,6 +66,7 @@ def json_parse(world, data, loader_rules = {}, extra_data = {}, debug = False, c
 							'anchor_y': 0
 						}
 						obj['extra'] = extra_data
+						obj['layer'] = layer
 						obj['everything'] = data
 						obj['properties'] = obj.get('properties', {})
 						# loader_rules[layer_name](world, obj)
