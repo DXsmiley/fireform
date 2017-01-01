@@ -4,12 +4,12 @@ API Reference
 .. toctree::
 	:maxdepth: 2
 
-	engine
-	main
-	resource
-	world
-	entity
-	data
-	system
-	message
-	tiled
+	api/engine
+	api/main
+	api/resource
+	api/world
+	api/entity
+	api/data
+	api/system
+	api/message
+	api/tiled
