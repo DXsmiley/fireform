@@ -151,6 +151,10 @@ def image(name, frame = 0):
 	return cache[name][frame % l]
 
 
+def image_is_loaded(name):
+	return name in cache
+
+
 def image_size(name):
 	i = image(name)
 	return i.width, i.height
