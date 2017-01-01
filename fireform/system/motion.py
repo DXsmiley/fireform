@@ -1,6 +1,8 @@
 import collections
 import itertools
 
+import cbbox
+
 from fireform.system.base import base
 from fireform import message
 import fireform.data
@@ -172,64 +174,24 @@ class motion(base):
 			world.post_message_private(message.collision_late(b, a), [b])
 
 	def check_collisions(self, world, direction_name):
-		comparison_count = 0
-		collisions = set()
-		region_count = 0
-		# active = set()
-		for bucket in group_by_bucket(self.filter_collisions):
-			events = []
-			active = collections.defaultdict(set)
-			extrov = collections.defaultdict(set)
-			for i in bucket:
-				if i.box.right > i.box.left and i.box.top > i.box.bottom:
-					events.append((i.box.left, i, 'push'))
-					events.append((i.box.right, i, 'pop'))
-			# Pushes should always be after pops when things have the same x-ordinate
-			events.sort(key = lambda x: x[2] == 'push')
-			events.sort(key = lambda x: x[0])
-			# print(events)
-			for place, entity, action in events:
-				partition_bottom = int(entity.box.bottom // PARTITION_SIZE)
-				partition_top = int(entity.box.top // PARTITION_SIZE) + 1
-				ex = is_extrovert(entity)
-				if action == 'pop':
-					# Only count these things once
-					region_count += partition_top - partition_bottom
-					# active.discard(entity)
-					if ex:
-						for i in range(partition_bottom, partition_top):
-							extrov[i].discard(entity)
-					else:
-						for i in range(partition_bottom, partition_top):
-							active[i].discard(entity)
-				else:
-					for i in range(partition_bottom, partition_top):
-						for other in active[i]:
-							comparison_count += 1
-							if check_overlap_y(entity, other):
-								collisions.add((entity, other))
-					if not ex:
-						for i in range(partition_bottom, partition_top):
-							for other in extrov[i]:
-								comparison_count += 1
-								if check_overlap_y(entity, other):
-									collisions.add((entity, other))
 
-					if ex:
-						for i in range(partition_bottom, partition_top):
-							extrov[i].add(entity)
-					else:
-						for i in range(partition_bottom, partition_top):
-							active[i].add(entity)
+		collisions = set()
+
+		for bucket in group_by_bucket(self.filter_collisions):
+			pairs = list(map(lambda e: (e.box.rectangle, e), bucket))
+			pairs.sort(key = lambda t: t[0].left)
+			rectangles = list(map(lambda t: t[0], pairs))
+			for a, b in cbbox.collide(rectangles):
+				t = (pairs[a][1], pairs[b][1])
+				collisions.add(t)
 
 		for a, b in collisions:
-			if self.ignore_masks or check_overlap_masks(a, b):
-				world.post_message_private(message.collision(a, b, direction_name), [a])
-				world.post_message_private(message.collision(b, a, direction_name), [b])
-				self.collisions_late.add((a, b))
+			if not is_extrovert(a) or not is_extrovert(b):
+				if self.ignore_masks or check_overlap_masks(a, b):
+					world.post_message_private(message.collision(a, b, direction_name), [a])
+					world.post_message_private(message.collision(b, a, direction_name), [b])
+					self.collisions_late.add((a, b))
 
 		debug_sys = world.systems_by_name.get('fireform.system.debug')
 		if debug_sys:
 			debug_sys.set_stat('collisions.hits', len(collisions))
-			debug_sys.set_stat('collisions.misses', comparison_count - len(collisions))
-			debug_sys.set_stat('collisions.queries', region_count)
