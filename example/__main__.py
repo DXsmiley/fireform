@@ -67,7 +67,7 @@ class behaviour_player(fireform.behaviour.base):
 				self.target['x'],
 				self.target['y']
 			))
-			fireform.audio.play('shoot', volume = 0.4)
+			# fireform.audio.play('shoot', volume = 0.4)
 
 	def m_mouse_move(self, world, entity, message):
 		self.target['x'] = message.x
@@ -98,7 +98,7 @@ class behaviour_monster(fireform.behaviour.base):
 			force = fireform.geom.vector(*other.velocity).normalised(6)
 			entity.velocity.x += force.x
 			entity.velocity.y += force.y
-			fireform.audio.play('hit')
+			# fireform.audio.play('hit')
 		if self.health == 0:
 			entity.kill()
 
@@ -276,4 +276,5 @@ for i in range(100):
 
 # Run the game
 
-fireform.main.run(world)
+# Do lots of ticks to see how fast the collisions are, but draw infrequently.
+fireform.main.run(world, ticks_per_second = 800, draw_rate = 8)
