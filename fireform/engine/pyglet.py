@@ -869,7 +869,28 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 	w_window_height = window_height
 
 	config = pyglet.gl.Config(sample_buffers = 1, samples = 0, double_buffer = True)
-	game_window = pyglet.window.Window(width = window_width, height = window_height, vsync = False, config = config, resizable = True)
+
+	fullscreen = kwargs.get('fullscreen', False)
+	window_style = pyglet.window.Window.WINDOW_STYLE_DEFAULT
+
+	if kwargs.get('borderless', False):
+		window_style = pyglet.window.Window.WINDOW_STYLE_BORDERLESS
+
+	vsync = kwargs.get('vsync', False)
+
+	game_window = pyglet.window.Window(
+		width = window_width,
+		height = window_height,
+		vsync = vsync,
+		config = config,
+		resizable = True,
+		style = window_style,
+		fullscreen = fullscreen
+	)
+
+	if 'position' in kwargs:
+		x, y = kwargs['position']
+		game_window.set_location(x, y)
 
 	# This prevent the on_draw event being triggered every single time anything happens.
 	# It also prevents the flipping of the buffer.

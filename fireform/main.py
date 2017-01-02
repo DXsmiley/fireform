@@ -29,7 +29,16 @@ def run(*args, **kwargs):
 			The frequency at which to re-draw the screen.
 			A value of ``1`` will redraw it every tick.
 			A value of ``2`` will redraw it every second tick.
+			etc...
 			Defaults to ``1``.
+		`borderless` : bool
+			Creates a borderless window. Defaults to false.
+		`position` : tuple of two ints
+			Places the window at a particular location on the screen.
+			If not specified, the window will be positioned by the
+			operating system.
+		`vsync` : bool
+			Enables vsync. Defaults to False.
 
 	"""
 	fireform.engine.current.run(*args, **kwargs)
