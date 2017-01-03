@@ -59,9 +59,13 @@ def tick():
 	return generic('tick')
 
 
-def draw():
-	"""This message is dispatched whenever the screen is redrawn."""
-	return generic('draw')
+class draw(base):
+	"""Dispatched whenever a layer is drawn."""
+
+	name = 'draw'
+
+	def __init__(self, layer):
+		self.layer = layer
 
 
 class key_press(base):

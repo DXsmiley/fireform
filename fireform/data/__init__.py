@@ -14,3 +14,4 @@ from fireform.data.box import *
 from fireform.data.friction import *
 from fireform.data.collision_bucket import *
 from fireform.data.collision_mask import *
+from fireform.data.layer import *

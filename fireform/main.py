@@ -39,6 +39,8 @@ def run(*args, **kwargs):
 			operating system.
 		`vsync` : bool
 			Enables vsync. Defaults to False.
+		`draw_handler` : callable
+			Experimental.
 
 	"""
 	fireform.engine.current.run(*args, **kwargs)

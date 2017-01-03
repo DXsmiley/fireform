@@ -2,16 +2,32 @@ import math
 
 from fireform.system.base import base
 import sortedcontainers
+import collections
 import fireform.resource
+
+
+def get_layer(entity):
+	c = entity['layer']
+	if c:
+		return c.layer
+	return 'default'
+
 
 class image(base):
 	"""This system draws images for you."""
 
 	def __init__(self):
-		self.batches = {}
-		self.batch_numbers = sortedcontainers.SortedDict()
+		self.done_sprite_update = False
+		# Batches divided into each layer and ordering.
+		self.batches = collections.defaultdict(dict)
+		# Counts number of entities in each layer and ordering.
+		self.batch_numbers = collections.defaultdict(sortedcontainers.SortedDict)
+		# Filters
 		self.filter_main = None
 		self.filter_batches = None
+		self.sorted_images = None
+		self.sorted_batches = None
+		# Need the camera system to get the clipping rectangle.
 		self.camera_system = None
 
 	def name(self):
@@ -20,12 +36,16 @@ class image(base):
 	def attach(self, world):
 		self.filter_main = world.filter_root.chain('box > image')
 		self.filter_batches = world.filter_root.chain('image_batch')
+		# self.sorted_images = fireform.efilter.Sorter(get_layer)
+		self.sorted_batches = fireform.efilter.Sorter(get_layer)
+		self.filter_batches.pipe(self.sorted_batches)
 		self.camera_system = world.systems_by_name['fireform.system.camera']
 
-	def get_batch(self, depth):
-		if depth not in self.batches:
-			self.batches[depth] = fireform.engine.current.batch()
-		return self.batches[depth]
+	def get_batch(self, layer, depth):
+		ld = self.batches[layer]
+		if depth not in ld:
+			ld[depth] = fireform.engine.current.batch()
+		return ld[depth]
 
 	def center_image(self, image):
 		image.anchor_x = image.width / 2
@@ -34,24 +54,31 @@ class image(base):
 	def m_new_entity(self, world, message):
 		if message.entity['image']:
 			ordering = message.entity.ordering
-			self.batch_numbers[ordering] = self.batch_numbers.get(ordering, 0) + 1
+			layer = get_layer(message.entity)
+			self.batch_numbers[layer][ordering] = self.batch_numbers[layer].get(ordering, 0) + 1
 
 	def m_dead_entity(self, world, message):
 		img = message.entity['image']
 		if img and img.sprite_object:
 			ordering = message.entity.ordering
-			self.batch_numbers[ordering] -= 1
-			if self.batch_numbers[ordering] == 0:
-				del self.batch_numbers[ordering]
+			layer = get_layer(message.entity)
+			self.batch_numbers[layer][ordering] -= 1
+			if self.batch_numbers[layer][ordering] == 0:
+				del self.batch_numbers[layer][ordering]
 			img.sprite_object.opacity = 0
 			img.sprite_object.flush()
 			img.sprite_object.delete()
 			img.sprite_object = None
 
+	def m_tick(self, world, message):
+		self.done_sprite_update = False
+
 	def m_draw(self, world, message):
-		self.update_sprites()
-		num_batches = self.sort_and_draw()
-		world.post_message(fireform.message.update_tracked_value('image_batches', num_batches))
+		if not self.done_sprite_update:
+			self.update_sprites()
+			self.done_sprite_update = True
+		num_batches = self.sort_and_draw(message.layer)
+		world.post_message(fireform.message.update_tracked_value('image_batches.' + message.layer, num_batches))
 
 	def update_sprites(self):
 		bounds = self.camera_system.boundary()
@@ -68,7 +95,7 @@ class image(base):
 						i_obj = fireform.resource.image(image_name, int(e_img.frame))
 						e_img.sprite_object = fireform.engine.current.sprite(
 							img = i_obj,
-							batch = self.get_batch(i.ordering),
+							batch = self.get_batch(get_layer(i), i.ordering),
 							blend = e_img.blend
 						)
 						e_img.image_last = e_img.image
@@ -108,9 +135,9 @@ class image(base):
 			e_img.frame_last = int(e_img.frame)
 			e_img.frame += e_img.frame_speed
 
-	def sort_and_draw(self):
+	def sort_and_draw(self, layer):
 		tasks = []
-		self.task_setup(tasks)
+		self.task_setup(layer, tasks)
 		# The actual drawing of things is quite slow.
 		# I might have to find a way to speed these things up somehow...
 		for o, b in tasks:
@@ -119,11 +146,11 @@ class image(base):
 
 	# Despite the fact that this feels really bad, it's actually pretty fast
 	# since the total number of layers that I have is minimal.
-	def task_setup(self, tasks):
-		for batch_entity in self.filter_batches:
+	def task_setup(self, layer, tasks):
+		for batch_entity in self.sorted_batches[layer]:
 			tasks.append((batch_entity.ordering, batch_entity['image_batch'].batch))
 			# batch_entity['image_batch'].batch.draw()
-		for ordering in self.batch_numbers:
-			if ordering in self.batches:
-				tasks.append((ordering, self.batches[ordering]))
+		for ordering in self.batch_numbers[layer]:
+			if ordering in self.batches[layer]:
+				tasks.append((ordering, self.batches[layer][ordering]))
 		tasks.sort(key = lambda x: x[0])

@@ -527,7 +527,8 @@ class CroppedSprite(PygletSprite):
 BLEND_MODES = {
 	None: (770, 771),
 	'normal': (770, 771),
-	'add': (pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE)
+	'add': (pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE),
+	'subtract': (pyglet.gl.GL_DST_COLOR, pyglet.gl.GL_ZERO)
 }
 
 
@@ -857,6 +858,13 @@ def get_camera_zoom(world):
 def set_clear_colour(colour):
 	pyglet.gl.glClearColor(*colour)
 
+def default_draw_handler(world):
+	world.handle_message(fireform.message.draw('default'))
+
+def set_blend_mode(mode):
+	pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
+	pyglet.gl.glBlendFunc(*BLEND_MODES[mode])
+
 def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 1, 1, 1), show_fps = False, mouse_sensitivity = 1, **kwargs):
 	"""Create the window and run the game."""
 
@@ -969,6 +977,8 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 	DRAW_EVERY = kwargs.get('draw_rate', 1)
 	INTERVAL = 1 / TARGET_TICKS
 
+	draw_handler = kwargs.get('draw_handler', default_draw_handler)
+
 	def update(delta_time):
 		# if delta_time > INTERVAL or True:
 		# 	print('update(', delta_time, ')')
@@ -979,7 +989,8 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 		update.tick_counter += 1
 		if update.tick_counter % DRAW_EVERY == 0:
 			game_window.clear()
-			world.handle_message(fireform.message.draw())
+			# world.handle_message(fireform.message.draw())
+			draw_handler(world)
 			fps_display.draw()
 			# game_window.flip()
 

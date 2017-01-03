@@ -65,6 +65,7 @@ class debug(base):
 		self.allow_edit = kwargs.get('allow_edit', False)
 		self.enable_console = kwargs.get('enable_console', self.allow_edit)
 		self.display_things = kwargs.get('display', True)
+		self.draw_layer = kwargs.get('draw_layer', 'default')
 		self.mouse_x = 0
 		self.mouse_y = 0
 		self.mouse_x_last = 0
@@ -221,6 +222,8 @@ class debug(base):
 		return 'fireform.system.debug'
 
 	def m_draw(self, world, message):
+		if message.layer != self.draw_layer:
+			return
 		bounds = self.camera_system.boundary()
 		if self.display_things:
 			# Draw entity collision boxes
