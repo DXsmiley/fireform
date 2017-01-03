@@ -854,6 +854,9 @@ def get_camera_zoom(world):
 	cam_sys = world.systems_by_name.get('fireform.system.camera', None)
 	return 1 if cam_sys == None else cam_sys.scale
 
+def set_clear_colour(colour):
+	pyglet.gl.glClearColor(*colour)
+
 def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 1, 1, 1), show_fps = False, mouse_sensitivity = 1, **kwargs):
 	"""Create the window and run the game."""
 
@@ -896,7 +899,7 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 	# It also prevents the flipping of the buffer.
 	game_window.invalid = True
 
-	pyglet.gl.glClearColor(*clear_colour)
+	set_clear_colour(clear_colour)
 
 	def translate_cursor(x, y):
 		cx, cy = get_mouse_position(world)
