@@ -1,4 +1,5 @@
 import pyglet
+import pyglet.image
 import fireform.message
 import warnings
 import time
@@ -521,6 +522,92 @@ class CroppedSprite(PygletSprite):
 			vertices = [int(v) for v in vertices]
 		self._vertex_list.vertices[:] = vertices
 
+class AllocatorException(Exception):
+	'''The allocator does not have sufficient free space for the requested
+	image size.'''
+	pass
+
+class _Strip(object):
+	def __init__(self, y, max_height):
+		self.x = 0
+		self.y = y
+		self.max_height = max_height
+		self.y2 = y
+
+	def add(self, width, height):
+		assert width > 0 and height > 0
+		assert height <= self.max_height
+
+		x, y = self.x, self.y
+		self.x += width
+		self.y2 = max(self.y + height, self.y2)
+		return x, y
+
+	def compact(self):
+		self.max_height = self.y2 - self.y
+
+class Allocator(object):
+	def __init__(self, width, height, padding = 0):
+		assert width > 0 and height > 0
+		self.width = width
+		self.height = height
+		self.padding = padding
+		self.strips = [_Strip(0, height)]
+		self.used_area = 0
+
+	def alloc(self, width, height):
+		width += self.padding * 2
+		height += self.padding * 2
+		for strip in self.strips:
+			if self.width - strip.x >= width and strip.max_height >= height:
+				self.used_area += width * height
+				x, y = strip.add(width, height)
+				return (x + self.padding, y + self.padding)
+
+		if self.width >= width and self.height - strip.y2 >= height:
+			self.used_area += width * height
+			strip.compact()
+			newstrip = _Strip(strip.y2, self.height - strip.y2)
+			self.strips.append(newstrip)
+			return newstrip.add(width, height)
+
+		raise AllocatorException('No more space in %r for box %dx%d' % (
+				self, width, height))
+
+class TextureAtlas(object):
+	def __init__(self, width = 256, height = 256, padding = 0):
+		self.texture = pyglet.image.Texture.create(
+			width, height, pyglet.gl.GL_RGBA, rectangle=True)
+		self.allocator = Allocator(width, height, padding)
+
+	def add(self, img):
+		x, y = self.allocator.alloc(img.width, img.height)
+		self.texture.blit_into(img, x, y, 0)
+		region = self.texture.get_region(x, y, img.width, img.height)
+		return region
+
+class TextureBin(object):
+	def __init__(self, texture_width = 256, texture_height = 256, padding = 0):
+		self.atlases = []
+		self.texture_width = texture_width
+		self.texture_height = texture_height
+		self.padding = padding
+
+	def add(self, img):
+		for atlas in list(self.atlases):
+			try:
+				return atlas.add(img)
+			except AllocatorException:
+				# Remove atlases that are no longer useful (this is so their
+				# textures can later be freed if the images inside them get
+				# collected).
+				if img.width < 64 and img.height < 64:
+					self.atlases.remove(atlas)
+
+		atlas = TextureAtlas(self.texture_width, self.texture_height, self.padding)
+		self.atlases.append(atlas)
+		return atlas.add(img)
+
 ############################################### UTILITIES
 
 
@@ -542,7 +629,7 @@ def lower_power_of_2(x):
 	return r >> 1
 
 bin_size = lower_power_of_2(pyglet.gl.GL_MAX_TEXTURE_SIZE)
-texture_bin = pyglet.image.atlas.TextureBin(bin_size, bin_size)
+texture_bin = TextureBin(bin_size, bin_size, 2)
 
 class image:
 
