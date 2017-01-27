@@ -18,6 +18,7 @@ def check_overlap_y(a, b):
 
 
 def circle_unpack(e):
+	assert(get_mask(e) == 'circle')
 	cx = (e.box.left + e.box.right) / 2
 	cy = (e.box.top + e.box.bottom) / 2
 	r = min(e.box.width, e.box.height) / 2
@@ -25,15 +26,21 @@ def circle_unpack(e):
 
 
 def check_overlap_rectangle_circle(a, b):
+	assert(get_mask(a) == 'rectangle')
+	assert(get_mask(b) == 'circle')
+	# print(a, b)
 	cx, cy, r = circle_unpack(b)
 	x = clamp(cx, a.box.left, a.box.right)
 	y = clamp(cy, a.box.bottom, a.box.top)
 	dx = cx - x
 	dy = cy - y
+	# print()
 	return dx * dx + dy * dy < r * r
 
 
 def check_overlap_circle_circle(a, b):
+	assert(get_mask(a) == 'circle')
+	assert(get_mask(b) == 'circle')
 	ax, ay, ar = circle_unpack(a)
 	bx, by, br = circle_unpack(b)
 	dx = ax - bx
