@@ -50,6 +50,12 @@ def check_overlap_circle_circle(a, b):
 	return f
 
 
+def _swap_args(func):
+	def internal(a, b):
+		return func(b, a)
+	return internal
+
+
 MASK_JUMPTABLE = {
 	'rectangle-rectangle': lambda a, b: True,
 	'rectangle-circle': check_overlap_rectangle_circle,
@@ -63,7 +69,7 @@ for k, v in list(MASK_JUMPTABLE.items()):
 	n = k.split('-')
 	if n[1] != n[0]:
 		n = '{}-{}'.format(n[1], n[0])
-		MASK_JUMPTABLE[n] = lambda a, b: v(b, a)
+		MASK_JUMPTABLE[n] = _swap_args(v)
 
 
 def check_overlap_masks(a, b):
