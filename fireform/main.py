@@ -14,17 +14,23 @@ def run(*args, **kwargs):
 			The world to simulate.
 		`window_width` : int
 			The initial width of the window.
+			Defaults to 1280.
 		`window_height` : int
 			The initial height of the window.
+			Defaults to 800.
+		`fullscreen` : bool
+			Wheather the window should be fullscreen.
+			Defaults to False.
 		`clear_colour` : tuple
 			A tuple of four ints representing a colour.
 			Used to clear the window after each frame.
+			Defaults to white.
 		`show_fps` : bool
-			Optional. Defaults to False.
-		`mouse_sensitivity` : int
-			Defaults to 1. Pending Deprecation.
+			Shows the FPS.
+			Defaults to True.
 		`ticks_per_second` : int
 			The number of tick events that occur every second.
+			Defaults to 60.
 		`draw_rate` : int
 			The frequency at which to re-draw the screen.
 			A value of ``1`` will redraw it every tick.
@@ -32,13 +38,15 @@ def run(*args, **kwargs):
 			etc...
 			Defaults to ``1``.
 		`borderless` : bool
-			Creates a borderless window. Defaults to false.
+			Creates a borderless window.
+			Defaults to false.
 		`position` : tuple of two ints
 			Places the window at a particular location on the screen.
 			If not specified, the window will be positioned by the
 			operating system.
 		`vsync` : bool
-			Enables vsync. Defaults to False.
+			Enables vsync.
+			Defaults to False.
 		`draw_handler` : callable
 			Experimental.
 

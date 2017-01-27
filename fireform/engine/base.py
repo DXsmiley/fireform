@@ -49,3 +49,6 @@ def camera_apply(centre_x, centre_y, zoom):
 # Reset the camera to its default position.
 def camera_dispel():
 	raise NotImplementedError
+
+def run(the_world, **kwargs):
+	raise NotImplementedError

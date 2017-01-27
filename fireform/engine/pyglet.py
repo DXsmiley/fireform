@@ -877,7 +877,7 @@ def set_blend_mode(mode):
 	pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
 	pyglet.gl.glBlendFunc(*BLEND_MODES[mode])
 
-def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 1, 1, 1), show_fps = False, mouse_sensitivity = 1, **kwargs):
+def run(the_world, **kwargs):
 	"""Create the window and run the game."""
 
 	global w_window_width
@@ -888,8 +888,11 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 
 	world = the_world
 
-	w_window_width = window_width
-	w_window_height = window_height
+	w_window_width = kwargs.get('window_width', 1280)
+	w_window_height = kwargs.get('window_height', 800)
+
+	# Deprecated feature
+	mouse_sensitivity = kwargs.get('mouse_sensitivity', 1)
 
 	config = pyglet.gl.Config(sample_buffers = 1, samples = 0, double_buffer = True)
 
@@ -919,7 +922,7 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 	# It also prevents the flipping of the buffer.
 	game_window.invalid = True
 
-	set_clear_colour(clear_colour)
+	set_clear_colour(kwargs.get('clear_colour', (1, 1, 1, 1)))
 
 	def translate_cursor(x, y):
 		cx, cy = get_mouse_position(world)
@@ -990,6 +993,7 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 	INTERVAL = 1 / TARGET_TICKS
 
 	draw_handler = kwargs.get('draw_handler', default_draw_handler)
+	fps_display = None
 
 	def update(delta_time):
 		# if delta_time > INTERVAL or True:
@@ -1003,12 +1007,14 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 			game_window.clear()
 			# world.handle_message(fireform.message.draw())
 			draw_handler(world)
-			fps_display.draw()
+			if fps_display:
+				fps_display.draw()
 			# game_window.flip()
 
 	update.tick_counter = 0
 
-	fps_display = pyglet.window.FPSDisplay(game_window)
+	if kwargs.get('show_fps', True):
+		fps_display = pyglet.window.FPSDisplay(game_window)
 	pyglet.clock.schedule_interval_soft(update, INTERVAL)
 	# pyglet.clock.set_fps_limit(TARGET_FPS) # This was depreciated. No longer using it.
 	pyglet.app.run()
