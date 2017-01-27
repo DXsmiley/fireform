@@ -534,6 +534,16 @@ BLEND_MODES = {
 
 ############################################### RESOURCE OBJECTS
 
+def lower_power_of_2(x):
+	r = 1
+	while x > 0:
+		x >>= 1
+		r <<= 1
+	return r >> 1
+
+bin_size = lower_power_of_2(pyglet.gl.GL_MAX_TEXTURE_SIZE)
+texture_bin = pyglet.image.atlas.TextureBin(bin_size, bin_size)
+
 class image:
 
 	__slots__ = ['image', 'is_smooth', 'flip_cache']
@@ -542,6 +552,8 @@ class image:
 		assert(file_obj or texture)
 		if file_obj:
 			self.image = pyglet.image.load('hint.png', file = file_obj)
+			if self.image.width < bin_size // 2 and self.image.height < bin_size // 2:
+				self.image = texture_bin.add(self.image)
 		if texture:
 			self.image = texture
 		self.is_smooth = False
