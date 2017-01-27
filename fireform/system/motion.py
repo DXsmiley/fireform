@@ -69,6 +69,8 @@ for k, v in list(MASK_JUMPTABLE.items()):
 	n = k.split('-')
 	if n[1] != n[0]:
 		n = '{}-{}'.format(n[1], n[0])
+		# We need to call a function to produce the new function
+		# Using a lambda will result in scope problems
 		MASK_JUMPTABLE[n] = _swap_args(v)
 
 
