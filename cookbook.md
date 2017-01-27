@@ -23,13 +23,13 @@ world = fireform.world.world()
 world.add_system(fireform.system.motion()) # Moves things
 world.add_system(fireform.system.image())  # Needed to draw images
 world.add_system(fireform.system.camera()) # Needed to view the world
-world.add_system(fireform.system.debug(allow_edit = True, enable_console = True))  # Debug info
+world.add_system(fireform.system.debug(allow_edit = True))  # Debug info
 
 # Add objects here
 
 def make_focus():
 	return fireform.entity.entity(
-		fireform.data.position(0, 0),
+		fireform.data.box(0, 0),
 		fireform.data.camera()
 	)
 
