@@ -905,8 +905,8 @@ def run(the_world, **kwargs):
 	vsync = kwargs.get('vsync', False)
 
 	game_window = pyglet.window.Window(
-		width = window_width,
-		height = window_height,
+		width = w_window_width,
+		height = w_window_height,
 		vsync = vsync,
 		config = config,
 		resizable = True,
