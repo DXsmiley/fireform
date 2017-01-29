@@ -103,19 +103,19 @@ class line:
 		self.r = vectorify(r)
 
 	def projection_factor(self, s):
-		if (s == self.p): return copy(self.p)
-		if (s == self.r): return copy(self.r)
+		if s == self.p: return 0
+		if s == self.r: return 1
 		d = self.r - self.p
-		return ((s.x - this.p.x) * d.x + (s.y - this.p.y) * d.y) / d.magnitude()
+		return ((s.x - self.p.x) * d.x + (s.y - self.p.y) * d.y) / d.magnitude()
 
 	def project(self, s):
-		if (s == self.p or self == self.r): return copy(s)
+		if s == self.p or self == self.r: return copy(s)
 		f = self.projection_factor(s)
-		ret = this.p + f * (this.r - this.p)
+		return self.p + (self.r - self.p) * f
 
 	def __eq__(self, other):
-		return  (self.p == other.p and self.r == other.r) \
-				(self.p == other.r and self.r == other.p)
+		return isinstance(other, line) and ((self.p == other.p and self.r == other.r) \
+			or (self.p == other.r and self.r == other.p))
 
 
 def distance(v, w):
