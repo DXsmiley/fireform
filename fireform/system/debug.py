@@ -3,6 +3,9 @@ import fireform.data
 import fireform.main
 import time
 import collections
+import math
+
+from fireform.system.motion import circle_unpack
 
 def stats_factory():
 	return collections.defaultdict(stats_factory)
@@ -29,6 +32,58 @@ def format_stats(s):
 		else:
 			result += '{}: {}\n'.format(k, format_stats_small(v))
 	return result
+
+def entity_wireframe(e):
+
+	rect = e.box.rectangle
+	points = [
+		rect.left,
+		rect.bottom,
+		rect.left,
+		rect.top,
+
+		rect.left,
+		rect.top,
+		rect.right,
+		rect.top,
+
+		rect.right,
+		rect.top,
+		rect.right,
+		rect.bottom,
+
+		rect.right,
+		rect.bottom,
+		rect.left,
+		rect.bottom,
+	]
+
+	pos = e.box.position
+	points += [
+		pos.x - 2,
+		pos.y - 2,
+		pos.x + 2,
+		pos.y + 2,
+
+		pos.x + 2,
+		pos.y - 2,
+		pos.x - 2,
+		pos.y + 2
+	]
+
+	mask = e['collision_mask']
+	if mask and mask.shape == 'circle':
+		cx, cy, r = circle_unpack(e)
+		for i in range(0, 360, 10):
+			points += [
+				cx + r * math.sin(math.radians(i)),
+				cy + r * math.cos(math.radians(i)),
+				cx + r * math.sin(math.radians(i + 10)),
+				cy + r * math.cos(math.radians(i + 10))
+			]
+
+	return points
+
 
 class debug(base):
 	"""Usefull for debugging.
@@ -236,40 +291,7 @@ class debug(base):
 				rect = i[fireform.data.box].rectangle
 				if fireform.geom.box_overlap(bounds, rect):
 					self.stats['entities']['on screen'] += 1
-					pos = i[fireform.data.box].position
-					points = [
-						# Rectangle
-						rect.left,
-						rect.bottom,
-						rect.left,
-						rect.top,
-
-						rect.left,
-						rect.top,
-						rect.right,
-						rect.top,
-
-						rect.right,
-						rect.top,
-						rect.right,
-						rect.bottom,
-
-						rect.right,
-						rect.bottom,
-						rect.left,
-						rect.bottom,
-
-						# Origin
-						pos.x - 2,
-						pos.y - 2,
-						pos.x + 2,
-						pos.y + 2,
-
-						pos.x + 2,
-						pos.y - 2,
-						pos.x - 2,
-						pos.y + 2
-					]
+					points = entity_wireframe(i)
 					if rect.left > rect.right or rect.bottom > rect.top:
 						points_error += points
 					elif i == self.targeted:
