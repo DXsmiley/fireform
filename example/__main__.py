@@ -172,7 +172,12 @@ def make_bullet(x, y, x_to, y_to):
 			size = (12, 12)
 		),
 		fireform.data.collision_mask('circle'),
-		fireform.data.velocity(x_to - x + random.randint(-10, 10), y_to - y + random.randint(-10, 10)).scale_to(80),
+		fireform.data.velocity(
+			fireform.geom.vector(
+				x_to - x + random.randint(-10, 10),
+				y_to - y + random.randint(-10, 10)
+			).normalised(80)
+		),
 		fireform.data.image('bullet', blend = 'add', rotation = math.degrees(math.atan2(x_to - x, y_to - y))),
 		tags = 'bullet'
 	)
@@ -256,7 +261,12 @@ def make_particle_burst(x, y):
 		yield fireform.entity.entity(
 			fireform.data.box(x, y),
 			fireform.data.image('pink_particle', blend = 'add'),
-			fireform.data.velocity(random.uniform(-1, 1), random.uniform(-1, 1)).scale_to(random.randint(20, 40)),
+			fireform.data.velocity(
+				fireform.geom.vector(
+					random.uniform(-1, 1),
+					random.uniform(-1, 1)
+				).normalised(random.randint(20, 40)),
+			),
 			behaviour_fade_away(random.uniform(5, 20)),
 			tags = ('no-collision', 'no-debug')
 		)
