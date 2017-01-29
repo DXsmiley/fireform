@@ -158,8 +158,8 @@ class motion(base):
 			acl = i[fireform.data.acceleration]
 			vel.x += acl.x
 			vel.y += acl.y
-			vel.x *= acl.friction
-			vel.y *= acl.friction
+			# vel.x *= acl.friction
+			# vel.y *= acl.friction
 
 		for i in self.filter_friction:
 			i.velocity.x *= i.friction.x
