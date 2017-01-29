@@ -15,6 +15,8 @@ touch my_project/__main__.py
 ```python
 import fireform
 
+fireform.engine.load('pyglet')
+
 # Load the resources. See resources.json for more details.
 fireform.resource.load('./my_project/resources/')
 
