@@ -29,5 +29,11 @@ def load(name):
 		raise Exception('The pyglet engine does not work in the browser')
 	elif name == 'sdl2':
 		raise Exception('The sdl2 engine does not work in the browser')
+	elif name == 'fabric':
+		import fireform.engine.fabric
+		current = fireform.engine.fabric
 	else:
 		raise ValueError('No engine with name ' + name)
+
+def get_current():
+	return current

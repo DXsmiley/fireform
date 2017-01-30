@@ -1,1 +1,1 @@
-transcrypt --nomin -e 6 root.py
+transcrypt --anno --kwargs --nomin root.py

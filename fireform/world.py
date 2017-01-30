@@ -1,3 +1,5 @@
+__pragma__('opov')
+
 import copy
 # import traceback
 import collections
@@ -16,8 +18,10 @@ class world:
 		self.entities = []
 		self.systems = []
 		self.systems_by_name = {}
+		1 / 0
 		l = lambda : collections.defaultdict(list)
-		self.message_handlers = l()
+		print(l)
+		self.message_handlers = collections.defaultdict(list)
 		self.message_handlers_by_entity = collections.defaultdict(l)
 		self.message_types = set()
 		self.filter_root = fireform.efilter.Filter('')
@@ -85,7 +89,7 @@ class world:
 	def handle_message_result(self, result):
 		# This feels wrong in so many ways...
 		# But the syntactic sugar is too sweet to ignore.
-		if inspect.isgenerator(result):
+		if result != None:
 			timer = fireform.util.timer.create_slim(result)
 			if timer:
 				self.add_entity(timer)

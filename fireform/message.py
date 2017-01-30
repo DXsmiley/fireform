@@ -17,16 +17,8 @@ class base():
 
 	"""
 
-	# This should be overridden by any class that inherits from this.
-	name = lambda self: self.__class__.__name__
-
-	# def name(self):
-	# 	"""Returns the name of the message.
-	#
-	# 	This also identities the function called in the behaviours and system.
-	# 	For example if the name is 'lemon_exploded', then the curresponding
-	# 	function will be 'm_lemon_exploded'."""
-	# 	raise NotImplementedError('A message failed to specify a name')
+	def name(self):
+		return self.__class__.__name__
 
 	def decipher_name(self):
 		""" Returns the name of the message.
@@ -34,12 +26,8 @@ class base():
 			This should be used instead of ``name``, since some older messages may use a function to
 			implement their name.
 		"""
-		if isinstance(self.name, str):
-			return self.name
-		else:
-			n = self.name()
-			warnings.warn('Message type "{}" is using a function to implement its name'.format(n), DeprecationWarning)
-			return n
+		return self.name()
+		# return self.name or self.__class__.name
 
 
 class generic(base):
@@ -51,7 +39,8 @@ class generic(base):
 	"""
 
 	def __init__(self, my_name):
-		self.name = my_name
+		# self.name = my_name
+		pass
 
 
 def tick():

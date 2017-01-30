@@ -51,7 +51,8 @@ def run(*args, **kwargs):
 			Experimental.
 
 	"""
-	fireform.engine.current.run(*args, **kwargs)
+	# fireform.engine.get_current().run(*args, **kwargs)
+	fireform.engine.get_current().run(*args,)
 
 def stop():
 	"""
@@ -64,4 +65,4 @@ def stop():
 	raise NotImplementedError()
 
 def swap_world(new_world):
-	return fireform.engine.current.swap_world(new_world)
+	return fireform.engine.get_current().swap_world(new_world)
