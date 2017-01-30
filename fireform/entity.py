@@ -1,6 +1,6 @@
-import copy
-import fireform.behaviour
-import fireform.data
+# import copy
+# import fireform.behaviour
+# import fireform.data
 import warnings
 
 class DuplicateComponentException(Exception):
@@ -149,7 +149,8 @@ class entity:
 			s += '    tags: ' + ', '.join(self.tags) + '\n'
 		return s
 
-# Compatibility shim, need to prevent sphinx from recursing into
-# a stack overflow
+# Compatibility shim, need to prevent sphinx from recursing into a stack overflow
+__pragma__('skip')
 if 'sphinx' not in __import__('sys').modules:
 	entity.entity = entity
+__pragma__('noskip')

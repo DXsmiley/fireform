@@ -17,7 +17,7 @@ import fireform.system
 import fireform.input
 import fireform.tilemap
 import fireform.resource
-import fireform.util
+# import fireform.util
 import fireform.audio
 import fireform.efilter
 import fireform.geom

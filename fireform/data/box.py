@@ -3,7 +3,6 @@
 # simplification of a lot of other code.
 
 from fireform.data.base import base
-import fireform.util
 import fireform.geom
 import copy
 

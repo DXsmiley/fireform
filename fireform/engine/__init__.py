@@ -26,10 +26,8 @@ def load(name):
 	assert(current == None)
 	print('Loading engine:', name)
 	if name == 'pyglet':
-		import fireform.engine.pyglet
-		current = fireform.engine.pyglet
+		raise Exception('The pyglet engine does not work in the browser')
 	elif name == 'sdl2':
-		import fireform.engine.sdl2
-		current = fireform.engine.sld2
+		raise Exception('The sdl2 engine does not work in the browser')
 	else:
 		raise ValueError('No engine with name ' + name)

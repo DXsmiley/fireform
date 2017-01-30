@@ -32,7 +32,6 @@
 """
 
 
-import hashlib
 import collections
 
 
@@ -75,7 +74,8 @@ def parse_rules(rules):
 
 
 def hash_rules(rules):
-	return hashlib.sha224(rules.encode('utf-8')).hexdigest()
+	# Removed because transcrypt can't load the hash module
+	return rules
 
 
 class Filter:

@@ -1,9 +1,7 @@
 # These lists have been sourced from the pyglet source code:
 # https://bitbucket.org/pyglet/pyglet/src/ce5be4874dcb90d1ea2374ccafd630fe67bc3027/pyglet/window/key.py
 
-import enum
-
-class key(enum.IntEnum):
+class key:
 
 	# Modifier mask constants
 	MOD_SHIFT       = 1 << 0
@@ -233,7 +231,7 @@ class key(enum.IntEnum):
 	BRACERIGHT    = 0x07d
 	ASCIITILDE    = 0x07e
 
-class mouse(enum.IntEnum):
+class mouse:
 
 	LEFT   = 1 << 0
 	MIDDLE = 1 << 1

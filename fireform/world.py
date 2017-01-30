@@ -1,11 +1,11 @@
 import copy
-import traceback
+# import traceback
 import collections
-import inspect
+# import inspect
 import fireform.message
-import fireform.efilter
-import fireform.util.timer
-import fireform.behaviour
+# import fireform.efilter
+# import fireform.util.timer
+# import fireform.behaviour
 
 class world:
 	""" World used to control game events and ticks.

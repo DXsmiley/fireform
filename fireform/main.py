@@ -4,7 +4,7 @@ Module used to start the master game loop.
 
 """
 
-import fireform
+import fireform.engine
 
 def run(*args, **kwargs):
 	"""

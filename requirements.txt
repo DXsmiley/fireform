@@ -1,2 +1,2 @@
-pyglet==1.2.4
 sortedcontainers==1.5.7
+transcrypt==3.6.4

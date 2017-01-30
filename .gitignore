@@ -4,6 +4,9 @@
 # Profiler output
 profile.txt
 
+# transcrypt files
+__javascript__
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
