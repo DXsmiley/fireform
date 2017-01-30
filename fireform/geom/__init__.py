@@ -80,6 +80,12 @@ class vector:
 		self.y /= other
 		return self
 
+	def __ilshift__(self, other):
+		""" Acts as a in-place setter, as the equality operator cannot be overloaded. """
+		self.x = other.x
+		self.y = other.y
+		return self
+
 	def cmul(self, other):
 		"""Component-wise multiplication"""
 		return vector(self.x * other.x, self.y * other.y)
