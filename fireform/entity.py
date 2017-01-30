@@ -1,6 +1,7 @@
 import copy
 import fireform.behaviour
 import fireform.data
+import warnings
 
 class DuplicateComponentException(Exception):
 	"""This gets thrown when you try to put multiple copies of a component
@@ -52,9 +53,16 @@ class entity:
 	def __getitem__(self, i):
 		return self.contents.get(i, None)
 
-	def __setitem__(self, i, v):
-		"""What happens if you try and attach something under the wrong name?"""
-		self.contents[i] = v
+	def __setattr__(self, name, value):
+		""" This should only be in here during debugging.
+			Released games should not have this for performance reasons.
+		"""
+		if isinstance(self.__dict__.get(name), fireform.data.base) and self.__dict__.get(name) != value:
+			warnings.warn('Assignment to ' + name + ' overrides datum component. Perhaps you meant to use "<<=" instead of "=".', stacklevel = 2)
+		self.__dict__[name] = value
+
+	def __contains__(self, i):
+		return i in self.contents
 
 	def handle_message(self, world, message):
 		# This should probably never be called.
