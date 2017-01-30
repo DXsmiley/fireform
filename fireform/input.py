@@ -62,22 +62,6 @@ class key:
 	SCRIPTSWITCH  = 0xff7e
 	FUNCTION      = 0xffd2
 
-	# Text motion constants: these are allowed to clash with key constants
-	MOTION_UP                = UP
-	MOTION_RIGHT             = RIGHT
-	MOTION_DOWN              = DOWN
-	MOTION_LEFT              = LEFT
-	MOTION_NEXT_WORD         = 1
-	MOTION_PREVIOUS_WORD     = 2
-	MOTION_BEGINNING_OF_LINE = 3
-	MOTION_END_OF_LINE       = 4
-	MOTION_NEXT_PAGE         = PAGEDOWN
-	MOTION_PREVIOUS_PAGE     = PAGEUP
-	MOTION_BEGINNING_OF_FILE = 5
-	MOTION_END_OF_FILE       = 6
-	MOTION_BACKSPACE         = BACKSPACE
-	MOTION_DELETE            = DELETE
-
 	# Number pad
 	NUMLOCK       = 0xff7f
 	NUM_SPACE     = 0xff80
