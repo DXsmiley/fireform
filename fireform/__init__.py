@@ -13,6 +13,7 @@ import fireform.main
 import fireform.world
 import fireform.entity
 import fireform.data
+import fireform.behaviour
 import fireform.system
 import fireform.input
 import fireform.tilemap

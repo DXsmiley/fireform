@@ -1,6 +1,6 @@
 # import copy
-# import fireform.behaviour
-# import fireform.data
+import fireform.behaviour
+import fireform.data
 import warnings
 
 class DuplicateComponentException(Exception):

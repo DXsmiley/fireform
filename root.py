@@ -1,2 +1,2 @@
 print('Hello, world!')
-import fireform.entity
+import fireform

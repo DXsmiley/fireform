@@ -1,6 +1,6 @@
 import json
 import warnings
-import fireform
+import fireform.engine
 
 cache = {} # Contains images
 audio_cache = {} # Contains audio

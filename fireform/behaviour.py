@@ -1,5 +1,5 @@
 import collections
-import inspect
+# import inspect
 
 
 subscription_cache = {}

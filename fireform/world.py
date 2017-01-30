@@ -3,9 +3,9 @@ import copy
 import collections
 # import inspect
 import fireform.message
-# import fireform.efilter
+import fireform.efilter
 # import fireform.util.timer
-# import fireform.behaviour
+import fireform.behaviour
 
 class world:
 	""" World used to control game events and ticks.
