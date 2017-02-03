@@ -9,7 +9,7 @@ class friction(xy):
 
 	def __init__(self, *args):
 		if len(args) == 0:
-			self.x = self.y = 0
+			self.x = self.y = 1
 		elif len(args) == 1:
 			self.x = self.y = args[0]
 		else:
