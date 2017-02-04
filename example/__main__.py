@@ -288,4 +288,4 @@ for i in range(100):
 
 # Run the game
 
-fireform.main.run(world)
+fireform.main.run(world, clear_colour = (0, 0, 0, 0))
