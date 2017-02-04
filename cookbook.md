@@ -56,12 +56,12 @@ In-game controls:
 - Right click and drag to resize an object. This will only change the bounding box.
 - Middle click an object to *watch* it. This allows you to continually inspect an object without having to hover your mouse over it.
 - Press `tab` to toggle debugging graphics.
-- Press `ctrl + tab` freeze the game.
+- Press `ctrl + tab` freeze or un-freeze the game.
 
 While the game is *frozen*:
 - Use the arrow keys to pan around the world.
-- Press `+` to zoom in.
-- Press `-` to zoom out.
+- Hold `+` to zoom in.
+- Hold `-` to zoom out.
 - Press `C` to reset the camera.
 
 ## Message reference
