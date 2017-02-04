@@ -27,8 +27,9 @@ class base:
 		"""Used internally."""
 		func_name = 'm_' + message.decipher_name()
 		if hasattr(self, func_name):
-			# print('handling', message.decipher_name())
-			return getattr(self, func_name)(world, entity, message)
+			f = getattr(self, func_name)
+			if not world.frozen or hasattr(f, '_surpass_frozen'):
+				return f(world, entity, message)
 
 	def can_handle_message(self, name):
 		"""Used to check if this behaviour can handle a message."""

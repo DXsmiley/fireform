@@ -4,6 +4,7 @@ from fireform.system.base import base
 import sortedcontainers
 import collections
 import fireform.resource
+import fireform.message
 
 
 def get_layer(entity):
@@ -17,7 +18,6 @@ class image(base):
 	"""This system draws images for you."""
 
 	def __init__(self):
-		self.done_sprite_update = False
 		# Batches divided into each layer and ordering.
 		self.batches = collections.defaultdict(dict)
 		# Counts number of entities in each layer and ordering.
@@ -51,12 +51,14 @@ class image(base):
 		image.anchor_x = image.width / 2
 		image.anchor_y = image.height / 2
 
+	@fireform.message.surpass_frozen
 	def m_new_entity(self, world, message):
 		if message.entity['image']:
 			ordering = message.entity.ordering
 			layer = get_layer(message.entity)
 			self.batch_numbers[layer][ordering] = self.batch_numbers[layer].get(ordering, 0) + 1
 
+	@fireform.message.surpass_frozen
 	def m_dead_entity(self, world, message):
 		img = message.entity['image']
 		if img and img.sprite_object:
@@ -70,17 +72,16 @@ class image(base):
 			img.sprite_object.delete()
 			img.sprite_object = None
 
-	def m_tick(self, world, message):
-		self.done_sprite_update = False
+	@fireform.message.surpass_frozen
+	def m_animate(self, world, message):
+		self.update_sprites(not world.frozen)
 
+	@fireform.message.surpass_frozen
 	def m_draw(self, world, message):
-		if not self.done_sprite_update:
-			self.update_sprites()
-			self.done_sprite_update = True
 		num_batches = self.sort_and_draw(message.layer)
 		world.post_message(fireform.message.update_tracked_value('image_batches.' + message.layer, num_batches))
 
-	def update_sprites(self):
+	def update_sprites(self, animate):
 		bounds = self.camera_system.boundary()
 		# print('ff.system.image.m_draw')
 		for i in self.filter_main:
@@ -133,7 +134,8 @@ class image(base):
 						e_img.sprite_object.visible = False
 						e_img.sprite_object.flush()
 			e_img.frame_last = int(e_img.frame)
-			e_img.frame += e_img.frame_speed
+			if animate:
+				e_img.frame += e_img.frame_speed
 
 	def sort_and_draw(self, layer):
 		tasks = []

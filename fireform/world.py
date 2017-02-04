@@ -21,6 +21,7 @@ class world:
 		self.message_handlers_by_entity = collections.defaultdict(l)
 		self.message_types = set()
 		self.filter_root = fireform.efilter.Filter('')
+		self.frozen = False
 
 	def refresh_entities(self):
 		"""Remove all dead entities from the entity list, and sort the living ones by ordering.

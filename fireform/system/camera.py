@@ -44,6 +44,10 @@ class camera(base):
 		self.scale = 1
 		self.letterbox = True
 		self.filter = None
+		# Currently used to implement the debug system's panning while world is frozen.
+		self.forced_offset_x = 0
+		self.forced_offset_y = 0
+		self.forced_offset_scale = 1
 
 	def name(self):
 		return 'fireform.system.camera'
@@ -65,9 +69,11 @@ class camera(base):
 			self.cam_y + (self.window_height / 2 / self.scale)
 		)
 
+	@fireform.message.surpass_frozen
 	def m_tick(self, world, message):
 		world.handle_message(camera_moved(self.cam_x, self.cam_y, self.scale, self.boundary()))
 
+	@fireform.message.surpass_frozen
 	def m_draw(self, world, message):
 		self.cam_num = 0
 		self.cam_x = 0
@@ -86,16 +92,22 @@ class camera(base):
 		self.cam_x //= self.cam_num
 		self.cam_y //= self.cam_num
 		self.scale /= self.cam_num
+		self.cam_x += int(self.forced_offset_x)
+		self.cam_y += int(self.forced_offset_y)
+		self.scale *= self.forced_offset_scale
 		world.handle_message(camera_moved(self.cam_x, self.cam_y, self.scale, self.boundary()))
 		self.apply_matrix()
 
+	@fireform.message.surpass_frozen
 	def m_window_resized(self, world, message):
 		self.window_width = message.width
 		self.window_height = message.height
 
+	@fireform.message.surpass_frozen
 	def m_camera_apply_matrix(self, world, message):
 		self.apply_matrix()
 
+	@fireform.message.surpass_frozen
 	def m_camera_dispel_matrix(self, world, message):
 		fireform.engine.current.camera_dispel()
 

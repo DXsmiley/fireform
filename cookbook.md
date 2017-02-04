@@ -51,14 +51,18 @@ fireform.main.run(world)
 ## Debugging system
 
 In-game controls:
+- Hover over an object to inspect it.
+- Left click and drag to move an object.
+- Right click and drag to resize an object. This will only change the bounding box.
+- Middle click an object to *watch* it. This allows you to continually inspect an object without having to hover your mouse over it.
+- Press `tab` to toggle debugging graphics.
+- Press `ctrl + tab` freeze the game.
 
-Left click to pick up an object, click again to drop it.
-
-Right click to select an object to resize, right click again to stop resizing it.
-
-Press tab to toggle the debug display.
-
-Press enter to enter and execute python code.
+While the game is *frozen*:
+- Use the arrow keys to pan around the world.
+- Press `+` to zoom in.
+- Press `-` to zoom out.
+- Press `C` to reset the camera.
 
 ## Message reference
 

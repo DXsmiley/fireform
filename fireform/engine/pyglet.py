@@ -972,6 +972,7 @@ def run(the_world, **kwargs):
 	global last_draw
 	global game_window
 	global world
+	global system_paused
 
 	world = the_world
 
@@ -1089,6 +1090,7 @@ def run(the_world, **kwargs):
 		world.handle_message(fireform.message.mouse_move_raw(mouse_raw_x, mouse_raw_y))
 		world.handle_message(fireform.message.mouse_move(*translate_cursor(mouse_raw_x, mouse_raw_y)))
 		world.handle_message(fireform.message.tick())
+		world.handle_message(fireform.message.animate())
 		update.tick_counter += 1
 		if update.tick_counter % DRAW_EVERY == 0:
 			game_window.clear()
