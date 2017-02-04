@@ -12,6 +12,13 @@ import json
 import warnings
 import types
 
+def hex_to_tuple(colour):
+	n = int(colour[1:], base = 16)
+	r = n // 65536
+	g = (n // 256) % 256
+	b = n % 256
+	return (r / 255, g / 255, b / 255, 1)
+
 def load(world, filename, loader_rules = {}, extra_data = {}, debug = False, callback = lambda w, d: None):
 	""" Load a map from a file.
 
@@ -43,6 +50,8 @@ def json_load(*args, **kwargs):
 
 def json_parse(world, data, loader_rules = {}, extra_data = {}, debug = False, callback = lambda w, d: None):
 	data['properties'] = data.get('properties', {})
+	if 'backgroundcolor' in data:
+		fireform.engine.current.set_clear_colour(hex_to_tuple(data['backgroundcolor']))
 	world.width = data['width'] * data['tilewidth']
 	world.height = data['height'] * data['tileheight']
 	for layer in data['layers']:

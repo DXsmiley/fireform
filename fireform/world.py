@@ -30,6 +30,8 @@ class world:
 		dead = [i for i in self.entities if not i.alive]
 		self.entities[:] = [i for i in self.entities if i.alive]
 		for i in dead:
+			# Experimental
+			self.handle_message_private(fireform.message.generic('_cleanup'), [i])
 			if i in self.message_handlers_by_entity:
 				del self.message_handlers_by_entity[i]
 			self.filter_root.remove(i)

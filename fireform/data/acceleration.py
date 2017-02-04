@@ -1,8 +1,9 @@
 from fireform.data.base import base
 from fireform.geom import vector
+from fireform.data.xy import xy
 import warnings
 
-class acceleration(base):
+class acceleration(xy):
 	"""Acceleration datum.
 
 	Acceleration is defined as change in velocity per tick.
@@ -18,12 +19,3 @@ class acceleration(base):
 
 	name = 'acceleration'
 	attribute_name = 'acceleration'
-
-	def __init__(self, x = 0, y = 0, friction = None):
-		self.x = x
-		self.y = y
-		if friction:
-			warnings.warn("'friction' property in 'acceleration' datum is deprecated", DeprecationWarning)
-		else:
-			friction = 1
-		self.friction = friction

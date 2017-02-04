@@ -20,6 +20,7 @@ def check_overlap_y(a, b):
 
 
 def circle_unpack(e):
+	assert(get_mask(e) == 'circle')
 	cx = (e.box.left + e.box.right) / 2
 	cy = (e.box.top + e.box.bottom) / 2
 	r = min(e.box.width, e.box.height) / 2
@@ -27,15 +28,21 @@ def circle_unpack(e):
 
 
 def check_overlap_rectangle_circle(a, b):
+	assert(get_mask(a) == 'rectangle')
+	assert(get_mask(b) == 'circle')
+	# print(a, b)
 	cx, cy, r = circle_unpack(b)
 	x = clamp(cx, a.box.left, a.box.right)
 	y = clamp(cy, a.box.bottom, a.box.top)
 	dx = cx - x
 	dy = cy - y
+	# print()
 	return dx * dx + dy * dy < r * r
 
 
 def check_overlap_circle_circle(a, b):
+	assert(get_mask(a) == 'circle')
+	assert(get_mask(b) == 'circle')
 	ax, ay, ar = circle_unpack(a)
 	bx, by, br = circle_unpack(b)
 	dx = ax - bx
@@ -43,6 +50,12 @@ def check_overlap_circle_circle(a, b):
 	tr = ar + br
 	f = dx * dx + dy * dy < tr * tr
 	return f
+
+
+def _swap_args(func):
+	def internal(a, b):
+		return func(b, a)
+	return internal
 
 
 MASK_JUMPTABLE = {
@@ -58,7 +71,9 @@ for k, v in list(MASK_JUMPTABLE.items()):
 	n = k.split('-')
 	if n[1] != n[0]:
 		n = '{}-{}'.format(n[1], n[0])
-		MASK_JUMPTABLE[n] = lambda a, b: v(b, a)
+		# We need to call a function to produce the new function
+		# Using a lambda will result in scope problems
+		MASK_JUMPTABLE[n] = _swap_args(v)
 
 
 def check_overlap_masks(a, b):
@@ -145,8 +160,8 @@ class motion(base):
 			acl = i[fireform.data.acceleration]
 			vel.x += acl.x
 			vel.y += acl.y
-			vel.x *= acl.friction
-			vel.y *= acl.friction
+			# vel.x *= acl.friction
+			# vel.y *= acl.friction
 
 		for i in self.filter_friction:
 			i.velocity.x *= i.friction.x

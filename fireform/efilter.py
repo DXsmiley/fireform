@@ -33,6 +33,7 @@
 
 
 import hashlib
+import collections
 
 
 def parse_rule(rule):
@@ -164,3 +165,23 @@ class Filter:
 			for l in str(i).strip('\n').split('\n'):
 				s += '    ' + l + '\n'
 		return s
+
+
+class Sorter:
+
+	def __init__(self, func):
+		self.contents = collections.defaultdict(set)
+		self.func = func
+		self.hash = id(func)
+
+	def insert(self, entity):
+		key = self.func(entity)
+		self.contents[key].add(entity)
+
+	def remove(self, entity):
+		key = self.func(entity)
+		self.contents[key].discard(entity)
+
+	def __getitem__(self, key):
+		self.contents[key] = set(filter(lambda e: e.alive, self.contents[key]))
+		return self.contents[key]

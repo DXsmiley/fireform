@@ -1,4 +1,5 @@
 import pyglet
+import pyglet.image
 import fireform.message
 import warnings
 import time
@@ -521,17 +522,114 @@ class CroppedSprite(PygletSprite):
 			vertices = [int(v) for v in vertices]
 		self._vertex_list.vertices[:] = vertices
 
+class AllocatorException(Exception):
+	'''The allocator does not have sufficient free space for the requested
+	image size.'''
+	pass
+
+class _Strip(object):
+	def __init__(self, y, max_height):
+		self.x = 0
+		self.y = y
+		self.max_height = max_height
+		self.y2 = y
+
+	def add(self, width, height):
+		assert width > 0 and height > 0
+		assert height <= self.max_height
+
+		x, y = self.x, self.y
+		self.x += width
+		self.y2 = max(self.y + height, self.y2)
+		return x, y
+
+	def compact(self):
+		self.max_height = self.y2 - self.y
+
+class Allocator(object):
+	def __init__(self, width, height, padding = 0):
+		assert width > 0 and height > 0
+		self.width = width
+		self.height = height
+		self.padding = padding
+		self.strips = [_Strip(0, height)]
+		self.used_area = 0
+
+	def alloc(self, width, height):
+		width += self.padding * 2
+		height += self.padding * 2
+		for strip in self.strips:
+			if self.width - strip.x >= width and strip.max_height >= height:
+				self.used_area += width * height
+				x, y = strip.add(width, height)
+				return (x + self.padding, y + self.padding)
+
+		if self.width >= width and self.height - strip.y2 >= height:
+			self.used_area += width * height
+			strip.compact()
+			newstrip = _Strip(strip.y2, self.height - strip.y2)
+			self.strips.append(newstrip)
+			return newstrip.add(width, height)
+
+		raise AllocatorException('No more space in %r for box %dx%d' % (
+				self, width, height))
+
+class TextureAtlas(object):
+	def __init__(self, width = 256, height = 256, padding = 0):
+		self.texture = pyglet.image.Texture.create(
+			width, height, pyglet.gl.GL_RGBA, rectangle=True)
+		self.allocator = Allocator(width, height, padding)
+
+	def add(self, img):
+		x, y = self.allocator.alloc(img.width, img.height)
+		self.texture.blit_into(img, x, y, 0)
+		region = self.texture.get_region(x, y, img.width, img.height)
+		return region
+
+class TextureBin(object):
+	def __init__(self, texture_width = 256, texture_height = 256, padding = 0):
+		self.atlases = []
+		self.texture_width = texture_width
+		self.texture_height = texture_height
+		self.padding = padding
+
+	def add(self, img):
+		for atlas in list(self.atlases):
+			try:
+				return atlas.add(img)
+			except AllocatorException:
+				# Remove atlases that are no longer useful (this is so their
+				# textures can later be freed if the images inside them get
+				# collected).
+				if img.width < 64 and img.height < 64:
+					self.atlases.remove(atlas)
+
+		atlas = TextureAtlas(self.texture_width, self.texture_height, self.padding)
+		self.atlases.append(atlas)
+		return atlas.add(img)
+
 ############################################### UTILITIES
 
 
 BLEND_MODES = {
 	None: (770, 771),
 	'normal': (770, 771),
-	'add': (pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE)
+	'add': (pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE),
+	'subtract': (pyglet.gl.GL_DST_COLOR, pyglet.gl.GL_ZERO)
 }
 
 
 ############################################### RESOURCE OBJECTS
+
+def lower_power_of_2(x):
+	r = 1
+	while x > 0:
+		x >>= 1
+		r <<= 1
+	return r >> 1
+
+bin_size = lower_power_of_2(pyglet.gl.GL_MAX_TEXTURE_SIZE)
+texture_bin = TextureBin(bin_size, bin_size, 2)
 
 class image:
 
@@ -541,6 +639,8 @@ class image:
 		assert(file_obj or texture)
 		if file_obj:
 			self.image = pyglet.image.load('hint.png', file = file_obj)
+			if self.image.width < bin_size // 2 and self.image.height < bin_size // 2:
+				self.image = texture_bin.add(self.image)
 		if texture:
 			self.image = texture
 		self.is_smooth = False
@@ -854,7 +954,17 @@ def get_camera_zoom(world):
 	cam_sys = world.systems_by_name.get('fireform.system.camera', None)
 	return 1 if cam_sys == None else cam_sys.scale
 
-def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 1, 1, 1), show_fps = False, mouse_sensitivity = 1, **kwargs):
+def set_clear_colour(colour):
+	pyglet.gl.glClearColor(*colour)
+
+def default_draw_handler(world):
+	world.handle_message(fireform.message.draw('default'))
+
+def set_blend_mode(mode):
+	pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
+	pyglet.gl.glBlendFunc(*BLEND_MODES[mode])
+
+def run(the_world, **kwargs):
 	"""Create the window and run the game."""
 
 	global w_window_width
@@ -865,17 +975,41 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 
 	world = the_world
 
-	w_window_width = window_width
-	w_window_height = window_height
+	w_window_width = kwargs.get('window_width', 1280)
+	w_window_height = kwargs.get('window_height', 800)
+
+	# Deprecated feature
+	mouse_sensitivity = kwargs.get('mouse_sensitivity', 1)
 
 	config = pyglet.gl.Config(sample_buffers = 1, samples = 0, double_buffer = True)
-	game_window = pyglet.window.Window(width = window_width, height = window_height, vsync = False, config = config, resizable = True)
+
+	fullscreen = kwargs.get('fullscreen', False)
+	window_style = pyglet.window.Window.WINDOW_STYLE_DEFAULT
+
+	if kwargs.get('borderless', False):
+		window_style = pyglet.window.Window.WINDOW_STYLE_BORDERLESS
+
+	vsync = kwargs.get('vsync', False)
+
+	game_window = pyglet.window.Window(
+		width = w_window_width,
+		height = w_window_height,
+		vsync = vsync,
+		config = config,
+		resizable = True,
+		style = window_style,
+		fullscreen = fullscreen
+	)
+
+	if 'position' in kwargs:
+		x, y = kwargs['position']
+		game_window.set_location(x, y)
 
 	# This prevent the on_draw event being triggered every single time anything happens.
 	# It also prevents the flipping of the buffer.
 	game_window.invalid = True
 
-	pyglet.gl.glClearColor(*clear_colour)
+	set_clear_colour(kwargs.get('clear_colour', (1, 1, 1, 1)))
 
 	def translate_cursor(x, y):
 		cx, cy = get_mouse_position(world)
@@ -945,6 +1079,9 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 	DRAW_EVERY = kwargs.get('draw_rate', 1)
 	INTERVAL = 1 / TARGET_TICKS
 
+	draw_handler = kwargs.get('draw_handler', default_draw_handler)
+	fps_display = None
+
 	def update(delta_time):
 		# if delta_time > INTERVAL or True:
 		# 	print('update(', delta_time, ')')
@@ -955,13 +1092,16 @@ def run(the_world, window_width = 1280, window_height = 800, clear_colour = (1, 
 		update.tick_counter += 1
 		if update.tick_counter % DRAW_EVERY == 0:
 			game_window.clear()
-			world.handle_message(fireform.message.draw())
-			fps_display.draw()
+			# world.handle_message(fireform.message.draw())
+			draw_handler(world)
+			if fps_display:
+				fps_display.draw()
 			# game_window.flip()
 
 	update.tick_counter = 0
 
-	fps_display = pyglet.window.FPSDisplay(game_window)
+	if kwargs.get('show_fps', True):
+		fps_display = pyglet.window.FPSDisplay(game_window)
 	pyglet.clock.schedule_interval_soft(update, INTERVAL)
 	# pyglet.clock.set_fps_limit(TARGET_FPS) # This was depreciated. No longer using it.
 	pyglet.app.run()

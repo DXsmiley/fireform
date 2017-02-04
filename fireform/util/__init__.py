@@ -191,4 +191,7 @@ class behaviour_follow_entitiy(fireform.behaviour.base):
 		self.target = target
 
 	def m_tick(self, world, entity, message):
-		entity.box.position = self.target.box.position + self.offset
+		if self.target and self.target.alive:
+			entity.box.position = self.target.box.position + self.offset
+		else:
+			self.target = None
