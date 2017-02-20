@@ -4,6 +4,7 @@ import itertools
 from fireform.system.base import base
 from fireform import message
 import fireform.data
+import fireform.geom
 
 
 PARTITION_SIZE = 128
@@ -23,6 +24,22 @@ def circle_unpack(e):
 	cy = (e.box.top + e.box.bottom) / 2
 	r = min(e.box.width, e.box.height) / 2
 	return cx, cy, r
+
+
+def line_unpack(e):
+	m = get_mask(e)
+	r = e.box.rectangle
+	if m == 'line_up':
+		return fireform.geom.line(
+			(m.left, m.bottom),
+			(m.right, m.top)
+		)
+	if m == 'line_down':
+		return fireform.geom.line(
+			(m.left, m.top),
+			(m.right, m.bottom)
+		)
+	assert(False)
 
 
 def check_overlap_rectangle_circle(a, b):
@@ -50,6 +67,22 @@ def check_overlap_circle_circle(a, b):
 	return f
 
 
+def check_overlap_rectangle_line(r, l):
+	return False
+
+
+def check_overlap_circle_line(c, l):
+	cx, cy, r = circle_unpack(c)
+	l = line_unpack(l)
+	n = l.project_clamped(fireform.geom.vector(cx, cy))
+	o = fireform.geom.vector(cx, cy)
+	return fireform.geom.distance(n, o) < r
+
+
+def check_overlap_line_line(a, b):
+	return True
+
+
 def _swap_args(func):
 	def internal(a, b):
 		return func(b, a)
@@ -59,7 +92,13 @@ def _swap_args(func):
 MASK_JUMPTABLE = {
 	'rectangle-rectangle': lambda a, b: True,
 	'rectangle-circle': check_overlap_rectangle_circle,
-	'circle-circle': check_overlap_circle_circle
+	'circle-circle': check_overlap_circle_circle,
+	'circle-line_up': check_overlap_circle_line,
+	'rectangle-line_up': check_overlap_rectangle_line,
+	'line_up-line_up': check_overlap_line_line,
+	'circle-line_down': check_overlap_circle_line,
+	'rectangle-line_down': check_overlap_rectangle_line,
+	'line_down-line_down': check_overlap_line_line
 }
 
 

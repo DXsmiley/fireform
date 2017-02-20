@@ -1,5 +1,9 @@
 from fireform.data.base import base
 
+
+VALID_SHAPES = {'circle', 'rectangle', 'line_up', 'line_down'}
+
+
 class collision_mask(base):
 	""" Specifies the shape of the entity to be used when
 		considering collisions.
@@ -9,6 +13,8 @@ class collision_mask(base):
 				The shape of the mask. Valid values are
 				- ``'circle'``
 				- ``'rectangle'``
+				- ``'line_up'``
+				- ``'line_down'``
 	"""
 
 	__slots__ = ['_shape']
@@ -24,7 +30,7 @@ class collision_mask(base):
 
 	@shape.setter
 	def shape(self, value):
-		assert(value in {'circle', 'rectangle'})
+		assert(value in VALID_SHAPES)
 		self._shape = value
 		return value
 

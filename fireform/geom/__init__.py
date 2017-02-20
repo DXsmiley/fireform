@@ -139,6 +139,11 @@ class line:
 		f = self.projection_factor(s)
 		return self.p + (self.r - self.p) * f
 
+	def project_clamped(self, s):
+		if s == self.p or self == self.r: return copy(s)
+		f = min(max(0, self.projection_factor(s)), 1)
+		return self.p + (self.r - self.p) * f
+
 	def __eq__(self, other):
 		return isinstance(other, line) and ((self.p == other.p and self.r == other.r) \
 			or (self.p == other.r and self.r == other.p))
