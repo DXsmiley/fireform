@@ -8,6 +8,11 @@ import math
 
 from fireform.system.motion import circle_unpack
 
+class entity_focus_changed(fireform.message.base):
+	name = 'debug_entity_focus_changed'
+	def __init__(self, entity):
+		self.entity = entity
+
 def stats_factory():
 	return collections.defaultdict(stats_factory)
 
@@ -272,7 +277,10 @@ class debug(base):
 					self.targeted.box.position.x += self.mouse_x - self.mouse_x_last
 					self.targeted.box.position.y += self.mouse_y - self.mouse_y_last
 			else:
-				self.targeted = self.find_targeted(world)
+				new_target = self.find_targeted(world)
+				if new_target != self.targeted:
+					world.post_message(entity_focus_changed(new_target))
+				self.targeted = new_target
 			self.mouse_x_last = message.x
 			self.mouse_y_last = message.y
 
