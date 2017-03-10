@@ -1112,6 +1112,10 @@ def swap_world(new_world):
 	global world
 	old_world = world
 	world = new_world
+	new_world.post_message(fireform.message.window_resized(
+		w_window_width,
+		w_window_height
+	))
 	return old_world
 
 def get_window_width():
