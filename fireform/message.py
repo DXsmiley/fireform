@@ -6,6 +6,13 @@
 
 import warnings
 
+
+def surpass_frozen(function):
+	""" Decorator to apply to a message handler if it should be called even if the world is frozen. """
+	function._surpass_frozen = True
+	return function
+
+
 class base():
 	""" Base message from which all other messages need to inherit.
 
@@ -57,6 +64,18 @@ class generic(base):
 def tick():
 	"""This message is dispatched once per game tick."""
 	return generic('tick')
+
+
+def frozen_tick():
+	"""This message is dispatched once per tick while the system is paused."""
+	return generic('tick')
+
+
+def animate():
+	""" Dispatches once per game tick, after the tick events and before the drae event.
+		It exists to seperate the tick-dependent graphics logic from the tick-independent logic.
+	"""
+	return generic('animate')
 
 
 class draw(base):

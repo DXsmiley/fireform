@@ -1,11 +1,17 @@
 from fireform.system.base import base
 import fireform.data
 import fireform.main
+import fireform.message
 import time
 import collections
 import math
 
 from fireform.system.motion import circle_unpack
+
+class entity_focus_changed(fireform.message.base):
+	name = 'debug_entity_focus_changed'
+	def __init__(self, entity):
+		self.entity = entity
 
 def stats_factory():
 	return collections.defaultdict(stats_factory)
@@ -32,6 +38,9 @@ def format_stats(s):
 		else:
 			result += '{}: {}\n'.format(k, format_stats_small(v))
 	return result
+
+def clamp(x, l, h):
+	return min(max(x, l), h)
 
 def entity_wireframe(e):
 
@@ -121,6 +130,7 @@ class debug(base):
 		self.enable_console = kwargs.get('enable_console', self.allow_edit)
 		self.display_things = kwargs.get('display', True)
 		self.draw_layer = kwargs.get('draw_layer', 'default')
+		self.paused = False
 		self.mouse_x = 0
 		self.mouse_y = 0
 		self.mouse_x_last = 0
@@ -151,6 +161,7 @@ class debug(base):
 			multiline = True
 		)
 		self.camera_system = None
+		self.camera_alter = {'x': 0, 'y': 0, 'scale': 0}
 
 	def set_stat(self, key, value):
 		stack = key.split('.')[::-1]
@@ -184,31 +195,58 @@ class debug(base):
 		except Exception as error:
 			self.console_log += str(error) + '\n'
 
+	@fireform.message.surpass_frozen
 	def m_new_entity(self, world, message):
 		self.stats['entities']['alive'] += 1
 
+	@fireform.message.surpass_frozen
 	def m_dead_entity(self, world, message):
 		self.stats['entities']['alive'] -= 1
 		self.stats['entities']['dead'] += 1
 
+	@fireform.message.surpass_frozen
 	def m_key_press(self, world, message):
-		# if self.allow_edit:
-		# 	if self.typing:
-		# 		if message.key == fireform.input.key.RETURN:
-		# 			self.execute_command(world, self.text_input)
-		# 			self.typing = False
-		# 			self.text_input = ''
-		# 			print('Not typing now!')
-		# 		elif message.key == fireform.input.key.BACKSPACE:
-		# 			self.text_input = self.text_input[:-1]
-		# 		elif 32 <= message.key < 127:
-		# 			self.text_input += chr(message.key)
-		# 	else:
-		# 		if message.key == fireform.input.key.RETURN:
-		# 			self.typing = True
-		# 			print('Typing now!')
-		if message.key == fireform.input.key.TAB:
-			self.display_things = not self.display_things
+		if message.modifiers & fireform.input.key.MOD_CTRL:
+			# With control pressed
+			if message.key == fireform.input.key.TAB:
+				if self.allow_edit:
+					world.frozen = not world.frozen
+		else:
+			# With no modifiers
+			if message.key == fireform.input.key.TAB:
+				self.display_things = not self.display_things
+			if world.frozen:
+				if message.key == fireform.input.key.C:
+					self.camera_system.forced_offset_x = 0
+					self.camera_system.forced_offset_y = 0
+					self.camera_system.forced_offset_scale = 1
+		if message.key == fireform.input.key.LEFT:
+			self.camera_alter['x'] -= 1
+		if message.key == fireform.input.key.RIGHT:
+			self.camera_alter['x'] += 1
+		if message.key == fireform.input.key.DOWN:
+			self.camera_alter['y'] -= 1
+		if message.key == fireform.input.key.UP:
+			self.camera_alter['y'] += 1
+		if message.key == fireform.input.key.MINUS:
+			self.camera_alter['scale'] -= 1
+		if message.key == fireform.input.key.EQUAL:
+			self.camera_alter['scale'] += 1
+
+	@fireform.message.surpass_frozen
+	def m_key_release(self, world, message):
+		if message.key == fireform.input.key.LEFT:
+			self.camera_alter['x'] += 1
+		if message.key == fireform.input.key.RIGHT:
+			self.camera_alter['x'] -= 1
+		if message.key == fireform.input.key.DOWN:
+			self.camera_alter['y'] += 1
+		if message.key == fireform.input.key.UP:
+			self.camera_alter['y'] -= 1
+		if message.key == fireform.input.key.MINUS:
+			self.camera_alter['scale'] += 1
+		if message.key == fireform.input.key.EQUAL:
+			self.camera_alter['scale'] -= 1
 
 	def find_targeted(self, world):
 		best = None
@@ -223,6 +261,7 @@ class debug(base):
 					best = i
 		return best
 
+	@fireform.message.surpass_frozen
 	def m_mouse_move(self, world, message):
 		self.set_stat('mouse', (message.x, message.y))
 		if self.allow_edit:
@@ -238,13 +277,18 @@ class debug(base):
 					self.targeted.box.position.x += self.mouse_x - self.mouse_x_last
 					self.targeted.box.position.y += self.mouse_y - self.mouse_y_last
 			else:
-				self.targeted = self.find_targeted(world)
+				new_target = self.find_targeted(world)
+				if new_target != self.targeted:
+					world.post_message(entity_focus_changed(new_target))
+				self.targeted = new_target
 			self.mouse_x_last = message.x
 			self.mouse_y_last = message.y
 
+	@fireform.message.surpass_frozen
 	def m_mouse_move_raw(self, world, message):
 		self.set_stat('mouse raw', (message.x, message.y))
 
+	@fireform.message.surpass_frozen
 	def m_mouse_click(self, world, message):
 		if self.allow_edit:
 			if message.button == fireform.input.mouse.LEFT:
@@ -258,24 +302,37 @@ class debug(base):
 			elif message.button == fireform.input.mouse.MIDDLE:
 				self.inspecting = self.targeted
 
-
+	@fireform.message.surpass_frozen
 	def m_mouse_release(self, world, message):
 		self.selected = False
 
+	@fireform.message.surpass_frozen
 	def m_window_resized(self, world, message):
 		self.text_label.y = message.height - 20
 
+	@fireform.message.surpass_frozen
 	def m_tick(self, world, message):
 		# This will work because we know that these stats have been set up at the start
 		self.stats['time']['ticks'] += 1
 		self.stats['time']['real'] = (time.time() - self.start_time) * 60
+		if world.frozen:
+			for i in ('x', 'y', 'scale'):
+				self.camera_alter[i] = clamp(self.camera_alter[i], -1, 1)
+			self.camera_system.forced_offset_x += self.camera_alter['x'] * 20
+			self.camera_system.forced_offset_y += self.camera_alter['y'] * 20
+			if self.camera_alter['scale'] == 1:
+				self.camera_system.forced_offset_scale *= 1.1
+			if self.camera_alter['scale'] == -1:
+				self.camera_system.forced_offset_scale /= 1.1
 
+	@fireform.message.surpass_frozen
 	def m_update_tracked_value(self, world, message):
 		self.set_stat(message.key, message.value)
 
 	def name(self):
 		return 'fireform.system.debug'
 
+	@fireform.message.surpass_frozen
 	def m_draw(self, world, message):
 		if message.layer != self.draw_layer:
 			return
