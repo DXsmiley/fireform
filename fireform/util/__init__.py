@@ -9,6 +9,9 @@ import warnings
 import math
 import fireform.util.flow
 
+def clamp(x, s, l):
+	return min(max(x, s), l)
+
 class behaviour_timer(fireform.behaviour.base):
 
 	def __init__(self, events):
@@ -85,17 +88,24 @@ class behaviour_avoid_solids(fireform.behaviour.base):
 
 class behaviour_eight_direction_movement(fireform.behaviour.base):
 
-	def __init__(self, speed = 2):
+	def __init__(self, speed = 2, ridgid = False):
 		self.speed = speed
 		self.movement_x = 0
 		self.movement_y = 0
+		self.ridgid = ridgid
 
 	def name(self):
 		return 'behaviour_eight_direction_movement'
 
 	def m_tick(self, world, entity, message):
-		entity['acceleration'].x = self.movement_x * self.speed
-		entity['acceleration'].y = self.movement_y * self.speed
+		self.movement_x = clamp(self.movement_x, -1, 1)
+		self.movement_y = clamp(self.movement_y, -1, 1)
+		if self.ridgid:
+			entity['velocity'].x = self.movement_x * self.speed
+			entity['velocity'].y = self.movement_y * self.speed
+		else:
+			entity['acceleration'].x = self.movement_x * self.speed
+			entity['acceleration'].y = self.movement_y * self.speed
 
 	def m_key_press(self, world, entity, message):
 		if message.key == fireform.input.key.RIGHT:
