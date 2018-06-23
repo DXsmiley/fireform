@@ -43,6 +43,15 @@ class box(base):
 		self.size = fireform.geom.vector(width, height)
 		self.anchor = fireform.geom.vector(anchor_x, anchor_y)
 
+	@staticmethod
+	def from_bounds(*, left, right, top, bottom):
+		return box(
+			width = right - left,
+			x = (left + right) / 2,
+			height = (top - bottom),
+			y = (top + bottom) / 2
+		)
+
 	@property
 	def x(self):
 		return self.position.x
