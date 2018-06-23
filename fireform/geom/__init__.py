@@ -32,15 +32,21 @@ class vector:
 
 	__slots__ = ['x', 'y']
 
-	def __init__(self, *args):
-		if len(args) == 0:
-			self.x = self.y = 0
-		elif len(args) == 1:
-			self.x, self.y = args[0]
-		elif len(args) == 2:
-			self.x, self.y = args
+	def __init__(self, *args, x=None, y=None):
+		if x is not None or y is not None:
+			self.x = x or 0
+			self.y = y or 0
+			if args:
+				raise ValueError('Received both keyword and positional arguments for a vector')
 		else:
-			raise ValueError('Too many arguments to construct vector')
+			if len(args) == 0:
+				self.x = self.y = 0
+			elif len(args) == 1:
+				self.x, self.y = args[0]
+			elif len(args) == 2:
+				self.x, self.y = args
+			else:
+				raise ValueError('Too many arguments to construct vector')
 
 	def length(self):
 		return (self.x ** 2 + self.y ** 2) ** 0.5
