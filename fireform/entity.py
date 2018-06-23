@@ -53,6 +53,12 @@ class entity:
 	def __getitem__(self, i):
 		return self.contents.get(i, None)
 
+	def __setitem__(self, i, v):
+		""" Setitem might be called from a += operator or similar, but it's only allowed when the the object mutates itself rather than returning a modified copy.
+		"""
+		if self[i] is not v:
+			raise ValueError('Components on entity cannot be hotswapped')
+
 	def __setattr__(self, name, value):
 		""" This should only be in here during debugging.
 			Released games should not have this for performance reasons.
