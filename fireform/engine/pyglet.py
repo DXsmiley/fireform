@@ -942,6 +942,13 @@ last_draw = time.time()
 game_window = None
 world = None
 
+# https://twistedpairdevelopment.wordpress.com/2011/06/28/pyglet-mouse-events-and-rendering/
+def idle( self ):
+    pyglet.clock.tick( poll = True )
+    return pyglet.clock.get_sleep_time( sleep_idle = True )
+pyglet.app.EventLoop.idle = idle
+
+
 # Not really sure what this is supposed to be doing, but it appears to be grabbing the
 # position of the camera, rather than the mouse :/
 def get_mouse_position(world):
@@ -1098,7 +1105,7 @@ def run(the_world, **kwargs):
 			draw_handler(world)
 			if fps_display:
 				fps_display.draw()
-			# game_window.flip()
+			game_window.flip()
 
 	update.tick_counter = 0
 
